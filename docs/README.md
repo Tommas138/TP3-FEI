@@ -109,6 +109,7 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~¿Cómo se llama "Etapa" en la interfaz?~~ **"Torneo del calendario"**, y `Torneo` se muestra como "Edición". En código no se renombra nada ([decisión 010](decisiones/010-torneo-del-calendario-en-la-interfaz.md)). "Etapa" no se entendía fuera de POLENTA
 - ~~¿Hay que configurar el calendario antes de importar?~~ **No.** La importación detecta los torneos del calendario y las categorías en la planilla y los crea al confirmar ([decisión 011](decisiones/011-la-importacion-detecta-el-calendario.md)). Una organización con datos previos queda configurada con solo subir su archivo
 - ~~¿Se importan varios archivos u hojas a la vez?~~ **Sí, uno o varios por categoría**, hasta 10 archivos. Un archivo por torneo del calendario no se soporta en esta versión ([decisión 012](decisiones/012-importacion-de-varios-archivos-y-hojas.md))
+- ~~¿Cómo se siembra a los jugadores que empatan en puntos?~~ **Al azar entre los empatados** ([decisión 013](decisiones/013-empates-en-la-siembra.md)). Es lo único que no le da ventaja a nadie por algo ajeno al juego, y resuelve la siembra de los torneos sin ranking
 - ~~¿Qué fecha llevan los puntos importados de la planilla?~~ **El 1° de enero del año del casillero** ([decisión 008](decisiones/008-fecha-de-los-movimientos-importados.md)). La planilla no tiene fechas y el ranking solo necesita que un torneo real de esa etapa y ese año le gane al importado
 
 ---

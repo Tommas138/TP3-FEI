@@ -37,6 +37,24 @@ export function ordenarSiembra(jugadores: JugadorASembrar[], azar: Azar): number
     .map((j) => j.jugadorId);
 }
 
+// La siembra de un sorteo anterior, si sigue sirviendo: cada inscripto tiene una posición y
+// van de 1 a N sin huecos. Si alguien se bajó o entró después, devuelve null y hay que sembrar
+// de nuevo. Reusarla es lo que hace que cambiar de modo no vuelva a sortear los empates
+// (decisión 014).
+export function siembraGuardada(inscriptos: { jugadorId: number; posicionSiembra: number | null }[]): number[] | null {
+  const ordenados = [...inscriptos].sort((a, b) => (a.posicionSiembra ?? 0) - (b.posicionSiembra ?? 0));
+  const completa = ordenados.length > 0 && ordenados.every((i, indice) => i.posicionSiembra === indice + 1);
+  return completa ? ordenados.map((i) => i.jugadorId) : null;
+}
+
+// Las zonas son de 4 y, si no se llenó el cupo, de 3. Con menos, la zona no alcanza para
+// definir quién clasifica (decisión 015).
+export const MINIMO_POR_ZONA = 3;
+
+export function alcanzanParaLasZonas(inscriptos: number, cantidadGrupos: number) {
+  return inscriptos >= cantidadGrupos * MINIMO_POR_ZONA;
+}
+
 // En qué orden recibe jugadores cada grupo en una vuelta.
 function ordenDeGrupos(modo: ModoDistribucion, vuelta: number, cantidadGrupos: number, azar: Azar): number[] {
   const grupos = Array.from({ length: cantidadGrupos }, (_, i) => i);

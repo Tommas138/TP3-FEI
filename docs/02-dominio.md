@@ -76,6 +76,8 @@ Grupos de 4 jugadores, todos contra todos. Con 32 inscriptos: 8 grupos.
 
 Nadie queda afuera. El reglamento garantiza un mínimo de 4 partidos por jugador: 3 de zona y al menos 1 de eliminatoria.
 
+**Si no se llena el cupo**, se mantiene la cantidad de grupos y algunos quedan de 3; quien cae en uno de 3 juega 2 partidos de zona. Con menos de 3 por grupo no se sortea. El reglamento no lo define: es una decisión nuestra ([decisión 015](decisiones/015-zonas-con-menos-inscriptos.md)).
+
 **En la plataforma:** el tamaño de los grupos, los clasificados al cuadro principal y si hay cuadro consuelo son parámetros del torneo. El cuadro consuelo es opcional y su nombre es configurable: por defecto "cuadro consuelo"; POLENTA lo llama "Complementaria" ([07](07-configurabilidad.md) §2.1).
 
 ### 3.2 Cuadros eliminatorios

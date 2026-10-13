@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  alcanzanParaLasZonas,
   distribuirEnZonas,
   generarPartidosDeZona,
   mezclar,
   ordenarSiembra,
+  siembraGuardada,
   type Azar,
   type Zona,
 } from '../../src/modules/competencia/sorteo';
@@ -184,5 +186,51 @@ describe('generarPartidosDeZona', () => {
     const zonas = distribuirEnZonas([1, 2, 3], 1, 'SERPENTINA', azarConSemilla(1));
 
     expect(generarPartidosDeZona(zonas)).toHaveLength(3);
+  });
+});
+
+describe('siembraGuardada', () => {
+  it('devuelve los jugadores en el orden de su posición de siembra', () => {
+    const inscriptos = [
+      { jugadorId: 30, posicionSiembra: 3 },
+      { jugadorId: 10, posicionSiembra: 1 },
+      { jugadorId: 20, posicionSiembra: 2 },
+    ];
+
+    expect(siembraGuardada(inscriptos)).toEqual([10, 20, 30]);
+  });
+
+  it('si alguien entró después del sorteo, no hay siembra que reusar', () => {
+    const inscriptos = [
+      { jugadorId: 10, posicionSiembra: 1 },
+      { jugadorId: 20, posicionSiembra: 2 },
+      { jugadorId: 30, posicionSiembra: null },
+    ];
+
+    expect(siembraGuardada(inscriptos)).toBeNull();
+  });
+
+  it('si alguien se bajó después del sorteo y quedó un hueco, no hay siembra que reusar', () => {
+    const inscriptos = [
+      { jugadorId: 10, posicionSiembra: 1 },
+      { jugadorId: 30, posicionSiembra: 3 },
+    ];
+
+    expect(siembraGuardada(inscriptos)).toBeNull();
+  });
+
+  it('sin inscriptos no hay siembra', () => {
+    expect(siembraGuardada([])).toBeNull();
+  });
+});
+
+describe('alcanzanParaLasZonas', () => {
+  it('con el cupo lleno alcanzan', () => {
+    expect(alcanzanParaLasZonas(32, 8)).toBe(true);
+  });
+
+  it('alcanzan mientras ninguna zona quede con menos de 3', () => {
+    expect(alcanzanParaLasZonas(24, 8)).toBe(true);
+    expect(alcanzanParaLasZonas(23, 8)).toBe(false);
   });
 });

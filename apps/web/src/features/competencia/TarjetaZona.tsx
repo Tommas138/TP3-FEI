@@ -1,6 +1,7 @@
+import type { ZonaSorteada } from '@setpoint/shared';
 import { Numero } from '../../components/Numero';
 import { Tarjeta } from '../../components/Tarjeta';
-import { sumaDeSiembra, type ZonaSorteada } from './sorteoEjemplo';
+import { sumaDeSiembra } from './zonas';
 
 export function TarjetaZona({ zona }: { zona: ZonaSorteada }) {
   return (
@@ -11,8 +12,8 @@ export function TarjetaZona({ zona }: { zona: ZonaSorteada }) {
       </div>
 
       <ul>
-        {zona.integrantes.map(({ posicionSiembra, apellido }) => (
-          <li key={posicionSiembra} className="flex h-[34px] items-center gap-2.5">
+        {zona.integrantes.map(({ jugadorId, posicionSiembra, apellido }) => (
+          <li key={jugadorId} className="flex h-[34px] items-center gap-2.5">
             <Numero className="w-5 text-xs text-gris-400">{String(posicionSiembra).padStart(2, '0')}</Numero>
             <span className="truncate text-sm">{apellido}</span>
           </li>

@@ -28,7 +28,8 @@ function sinJugar(jugadorAId: number, jugadorBId: number, estado: EstadoPartido)
   return { jugadorAId, jugadorBId, ganadorId: null, estado, sets: [] };
 }
 
-const integrantes = (...ids: number[]) => ids.map((jugadorId) => ({ jugadorId }));
+// Los integrantes de la zona, en orden de siembra: el primero es el mejor rankeado.
+const integrantes = (...ids: number[]) => ids.map((jugadorId, i) => ({ jugadorId, posicionSiembra: i + 1 }));
 
 const deJugador = (jugadorId: number, partidos: PartidoDeLaTabla[], ids = [1, 2, 3, 4]) =>
   estadisticasDeZona(integrantes(...ids), partidos).find((e) => e.jugadorId === jugadorId);
@@ -159,10 +160,62 @@ describe('tablaDeZona', () => {
     expect(desempates(tabla)).toEqual(['DIFERENCIA_SETS', 'GAMES_GANADOS', 'PARTIDOS_GANADOS', null]);
   });
 
-  it('sin partidos jugados quedan todos empatados, en el orden en que llegaron', () => {
+  it('entre dos empatados en todo, gana el que ganó el partido entre ambos', () => {
+    // 1 y 2 quedan iguales en partidos, sets y games. 2 está mejor sembrado, pero 1 le ganó.
+    const partidos = [jugado(1, 2, '6-4 6-4'), jugado(2, 3, '6-4 6-4'), jugado(4, 1, '6-4 6-4')];
+    const tabla = tablaDeZona(integrantes(2, 1, 3, 4), partidos);
+
+    expect(orden(tabla)).toEqual([4, 1, 2, 3]);
+    expect(desempates(tabla)).toEqual(['DIFERENCIA_SETS', 'ENFRENTAMIENTO_DIRECTO', 'PARTIDOS_GANADOS', null]);
+  });
+
+  it('el enfrentamiento directo también vale si fue por W.O.', () => {
+    // 2 ganó por W.O. y perdió 0-6 0-6: queda igual que 1 en todo, y le ganó.
+    const partidos = [walkover(2, 1), jugado(1, 3, '6-0 6-0'), jugado(4, 2, '6-0 6-0')];
+    const tabla = tablaDeZona(integrantes(1, 2, 3, 4), partidos);
+
+    expect(orden(tabla).slice(1, 3)).toEqual([2, 1]);
+    expect(tabla[1].desempateConElSiguiente).toBe('ENFRENTAMIENTO_DIRECTO');
+  });
+
+  it('si los dos empatados todavía no jugaron entre ellos, desempata el ranking', () => {
+    const tabla = tablaDeZona(integrantes(2, 1, 3, 4), [jugado(1, 3, '6-4 6-4'), jugado(2, 4, '6-4 6-4')]);
+
+    expect(orden(tabla)).toEqual([2, 1, 3, 4]);
+    expect(desempates(tabla)).toEqual(['RANKING', 'PARTIDOS_GANADOS', 'RANKING', null]);
+  });
+
+  it('en un empate circular de tres no mira el enfrentamiento directo: desempata el ranking', () => {
+    // 1 le ganó a 2, 2 a 3 y 3 a 1, todos por el mismo marcador.
+    const partidos = [jugado(1, 2, '6-4 6-4'), jugado(2, 3, '6-4 6-4'), jugado(3, 1, '6-4 6-4')];
+    const tabla = tablaDeZona(integrantes(3, 2, 1), partidos);
+
+    expect(orden(tabla)).toEqual([3, 2, 1]);
+    expect(desempates(tabla)).toEqual(['RANKING', 'RANKING', null]);
+  });
+
+  it('con tres empatados no usa el enfrentamiento directo aunque uno les haya ganado a los otros dos', () => {
+    // 1, 2 y 3 quedan iguales en todo gracias a sus partidos con 4, 5 y 6. Aunque 3 les ganó a
+    // 1 y a 2, entre tres se pasa al ranking, y 3 es el peor sembrado de los tres.
+    const partidos = [
+      jugado(3, 1, '6-4 6-4'),
+      jugado(3, 2, '6-4 6-4'),
+      jugado(1, 4, '6-4 6-4'),
+      jugado(1, 5, '6-4 6-4'),
+      jugado(2, 4, '6-4 6-4'),
+      jugado(2, 5, '6-4 6-4'),
+      jugado(6, 3, '6-4 6-4'),
+    ];
+    const tabla = tablaDeZona(integrantes(1, 2, 3, 4, 5, 6), partidos);
+
+    expect(orden(tabla).slice(0, 3)).toEqual([1, 2, 3]);
+    expect(desempates(tabla).slice(0, 2)).toEqual(['RANKING', 'RANKING']);
+  });
+
+  it('sin partidos jugados, la tabla sigue el orden de siembra', () => {
     const tabla = tablaDeZona(integrantes(3, 1, 2), []);
 
     expect(orden(tabla)).toEqual([3, 1, 2]);
-    expect(desempates(tabla)).toEqual([null, null, null]);
+    expect(desempates(tabla)).toEqual(['RANKING', 'RANKING', null]);
   });
 });

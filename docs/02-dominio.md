@@ -125,6 +125,8 @@ El organizador prefiere **serpentina**, pero pidió poder elegir. Se implementan
 
 **Bombos** — aleatorio dentro de cada franja. Replica la mecánica actual.
 
+**Posición de siembra.** Los tres modos parten del mismo orden: los inscriptos de más a menos puntos en el ranking vigente de la categoría. **Los que empatan en puntos se ordenan al azar entre ellos** ([decisión 013](decisiones/013-empates-en-la-siembra.md)); el reglamento no lo define, y los empates son frecuentes porque todo jugador nuevo entra con 0. En un torneo sin ranking todos empatan y el orden entero sale al azar.
+
 **El sorteo como ceremonia es un caso general, no una rareza de POLENTA.** Por eso se parametriza con `modo_sorteo` ([07-configurabilidad.md](07-configurabilidad.md) §2.1):
 
 - `automatico` — el sistema sortea y publica

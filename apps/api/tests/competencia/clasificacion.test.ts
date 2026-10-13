@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   estadisticasDeZona,
+  tablaDeZona,
   type EstadoPartido,
+  type FilaDeTabla,
   type PartidoDeLaTabla,
 } from '../../src/modules/competencia/clasificacion';
 
@@ -100,5 +102,67 @@ describe('estadisticasDeZona', () => {
 
   it('rechaza un partido de un jugador que no es de la zona', () => {
     expect(() => estadisticasDeZona(integrantes(1, 2), [jugado(1, 9, '6-0 6-0')])).toThrow();
+  });
+});
+
+// El orden de la tabla y, entre cada par de filas, el criterio que las separó.
+const orden = (tabla: FilaDeTabla[]) => tabla.map((f) => f.jugadorId);
+const desempates = (tabla: FilaDeTabla[]) => tabla.map((f) => f.desempateConElSiguiente);
+
+describe('tablaDeZona', () => {
+  it('ordena por partidos ganados', () => {
+    const tabla = tablaDeZona(integrantes(1, 2, 3), [jugado(3, 1, '6-4 6-4'), jugado(3, 2, '6-4 6-4'), jugado(2, 1, '6-4 6-4')]);
+
+    expect(orden(tabla)).toEqual([3, 2, 1]);
+    expect(tabla.map((f) => f.posicion)).toEqual([1, 2, 3]);
+    expect(desempates(tabla)).toEqual(['PARTIDOS_GANADOS', 'PARTIDOS_GANADOS', null]);
+  });
+
+  it('con los mismos partidos ganados, desempata por sets ganados y después por diferencia de sets', () => {
+    // 3 y 4 perdieron, pero 3 le sacó un set a su rival. 1 y 2 ganaron 2 sets, pero 1 perdió uno.
+    const tabla = tablaDeZona(integrantes(1, 2, 3, 4), [jugado(1, 3, '6-4 3-6 [10-8]'), jugado(2, 4, '6-4 6-4')]);
+
+    expect(orden(tabla)).toEqual([2, 1, 3, 4]);
+    expect(desempates(tabla)).toEqual(['DIFERENCIA_SETS', 'PARTIDOS_GANADOS', 'SETS_GANADOS', null]);
+  });
+
+  it('con los sets iguales, desempata por games ganados antes que por diferencia', () => {
+    // 1 ganó más games (14 contra 12) aunque 2 tiene mejor diferencia (+12 contra +2).
+    const tabla = tablaDeZona(integrantes(1, 2, 3, 4), [jugado(1, 3, '7-6 7-6'), jugado(2, 4, '6-0 6-0')]);
+
+    expect(orden(tabla)).toEqual([1, 2, 3, 4]);
+    expect(desempates(tabla)).toEqual(['GAMES_GANADOS', 'PARTIDOS_GANADOS', 'GAMES_GANADOS', null]);
+  });
+
+  it('con los mismos games ganados, desempata por diferencia de games', () => {
+    // 1 y 2 ganaron 12 games, pero 1 perdió 8 y 2 perdió 4.
+    const tabla = tablaDeZona(integrantes(1, 2, 3, 4), [jugado(1, 3, '6-4 6-4'), jugado(2, 4, '6-2 6-2')]);
+
+    expect(orden(tabla).slice(0, 2)).toEqual([2, 1]);
+    expect(tabla[0].desempateConElSiguiente).toBe('DIFERENCIA_GAMES');
+  });
+
+  it('el W.O. entra en la cascada como 6-0 6-0', () => {
+    // Los dos ganaron 12 games; el W.O. no le dio ninguno al rival.
+    const tabla = tablaDeZona(integrantes(1, 2, 3, 4), [walkover(1, 3), jugado(2, 4, '6-4 6-4')]);
+
+    expect(orden(tabla).slice(0, 2)).toEqual([1, 2]);
+    expect(tabla[0].desempateConElSiguiente).toBe('DIFERENCIA_GAMES');
+  });
+
+  it('separa al primero y sigue desempatando a los que quedan igualados', () => {
+    // Los tres ganaron un partido: 4 se despega por diferencia de sets, y entre 1 y 2 deciden los games.
+    const partidos = [jugado(4, 3, '6-0 6-0'), jugado(1, 3, '6-4 3-6 [10-8]'), jugado(2, 3, '6-3 4-6 [10-8]')];
+    const tabla = tablaDeZona(integrantes(1, 2, 3, 4), partidos);
+
+    expect(orden(tabla)).toEqual([4, 2, 1, 3]);
+    expect(desempates(tabla)).toEqual(['DIFERENCIA_SETS', 'GAMES_GANADOS', 'PARTIDOS_GANADOS', null]);
+  });
+
+  it('sin partidos jugados quedan todos empatados, en el orden en que llegaron', () => {
+    const tabla = tablaDeZona(integrantes(3, 1, 2), []);
+
+    expect(orden(tabla)).toEqual([3, 1, 2]);
+    expect(desempates(tabla)).toEqual([null, null, null]);
   });
 });

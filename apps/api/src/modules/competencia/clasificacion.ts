@@ -84,3 +84,58 @@ export function estadisticasDeZona(integrantes: { jugadorId: number }[], partido
   }
   return [...porJugador.values()];
 }
+
+// Criterios de desempate, en el orden del reglamento.
+export type Criterio = 'PARTIDOS_GANADOS' | 'SETS_GANADOS' | 'DIFERENCIA_SETS' | 'GAMES_GANADOS' | 'DIFERENCIA_GAMES';
+
+// Negativo si a va antes que b, positivo si va después, 0 si el criterio no los separa.
+type Comparador = { criterio: Criterio; comparar: (a: Estadisticas, b: Estadisticas) => number };
+
+const masEsMejor = (valor: (e: Estadisticas) => number) => (a: Estadisticas, b: Estadisticas) => valor(b) - valor(a);
+
+// La cascada es una lista: reordenarla para otro circuito es cambiar este array
+// (07-configurabilidad.md §3).
+export const CASCADA_DE_ZONA: Comparador[] = [
+  { criterio: 'PARTIDOS_GANADOS', comparar: masEsMejor((e) => e.partidosGanados) },
+  { criterio: 'SETS_GANADOS', comparar: masEsMejor((e) => e.setsGanados) },
+  { criterio: 'DIFERENCIA_SETS', comparar: masEsMejor((e) => e.setsGanados - e.setsPerdidos) },
+  { criterio: 'GAMES_GANADOS', comparar: masEsMejor((e) => e.gamesGanados) },
+  { criterio: 'DIFERENCIA_GAMES', comparar: masEsMejor((e) => e.gamesGanados - e.gamesPerdidos) },
+];
+
+export type FilaDeTabla = Estadisticas & {
+  posicion: number;
+  // El criterio que la separó de la fila de abajo. Es lo que se explica en pantalla
+  // ("desempata games ganados"). Null en la última fila o si siguen empatadas.
+  desempateConElSiguiente: Criterio | null;
+};
+
+type Ordenada = { fila: Estadisticas; desempateConElSiguiente: Criterio | null };
+
+// Vale el primer criterio que rompe la igualdad: se ordena por el primero, se parte en
+// bloques de empatados y cada bloque sigue con los criterios que quedan.
+function ordenarPorCascada(bloque: Estadisticas[], cascada: Comparador[]): Ordenada[] {
+  const [actual, ...resto] = cascada;
+  if (bloque.length === 1 || !actual) return bloque.map((fila) => ({ fila, desempateConElSiguiente: null }));
+
+  // El sort es estable: dentro de un empate se conserva el orden en que llegaron.
+  const bloques: Estadisticas[][] = [];
+  for (const fila of [...bloque].sort(actual.comparar)) {
+    const ultimo = bloques.at(-1);
+    if (ultimo && actual.comparar(ultimo[0], fila) === 0) ultimo.push(fila);
+    else bloques.push([fila]);
+  }
+
+  return bloques.flatMap((empatados, i) => {
+    const ordenadas = ordenarPorCascada(empatados, resto);
+    if (i < bloques.length - 1) ordenadas[ordenadas.length - 1].desempateConElSiguiente = actual.criterio;
+    return ordenadas;
+  });
+}
+
+// La tabla de posiciones de una zona, ordenada con la cascada de desempates.
+export function tablaDeZona(integrantes: { jugadorId: number }[], partidos: PartidoDeLaTabla[]): FilaDeTabla[] {
+  return ordenarPorCascada(estadisticasDeZona(integrantes, partidos), CASCADA_DE_ZONA).map(
+    ({ fila, desempateConElSiguiente }, i) => ({ ...fila, posicion: i + 1, desempateConElSiguiente }),
+  );
+}

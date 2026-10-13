@@ -112,6 +112,7 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~¿Cómo se siembra a los jugadores que empatan en puntos?~~ **Al azar entre los empatados** ([decisión 013](decisiones/013-empates-en-la-siembra.md)). Es lo único que no le da ventaja a nadie por algo ajeno al juego, y resuelve la siembra de los torneos sin ranking
 - ~~¿Dónde vive el sorteo entre "volver a sortear" y confirmar?~~ **Como borrador en la base**, en `Inscripcion.grupo` y `posicionSiembra` ([decisión 014](decisiones/014-borrador-del-sorteo.md)). Lo que se confirma es lo que se vio, sin confiar en lo que mande el cliente, y sobrevive a recargar la página
 - ~~¿Cuántas zonas se arman si no se llena el cupo?~~ **Las del formato, con zonas de 3 si hace falta y nunca menos** ([decisión 015](decisiones/015-zonas-con-menos-inscriptos.md)). Cambiar la cantidad de zonas alteraría el formato publicado y los cuadros
+- ~~¿El W.O. guarda sets 6-0 6-0 en la base?~~ **No: se arman al calcular**, a partir del estado y el ganador ([decisión 016](decisiones/016-walkover-sin-sets-guardados.md)). Así la base no registra como jugado un partido que no se jugó
 - ~~¿Qué fecha llevan los puntos importados de la planilla?~~ **El 1° de enero del año del casillero** ([decisión 008](decisiones/008-fecha-de-los-movimientos-importados.md)). La planilla no tiene fechas y el ranking solo necesita que un torneo real de esa etapa y ese año le gane al importado
 
 ---

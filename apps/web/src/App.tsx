@@ -9,6 +9,7 @@ import { PadronPage } from './pages/PadronPage';
 import { RecuperarContrasenaPage } from './pages/RecuperarContrasenaPage';
 import { RegistroPage } from './pages/RegistroPage';
 import { RestablecerContrasenaPage } from './pages/RestablecerContrasenaPage';
+import { SorteoPage } from './pages/SorteoPage';
 import { TuCircuitoPage } from './pages/TuCircuitoPage';
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
       <Route path="/padron/importar" element={<ImportarPadronPage />} />
       {/* /torneos/nuevo entra por acá con id "nuevo": es la misma pantalla antes del primer guardado. */}
       <Route path="/torneos/:id" element={<NuevoTorneoPage />} />
+      <Route path="/torneos/:id/sorteo" element={<SorteoPage />} />
     </Routes>
   );
 }

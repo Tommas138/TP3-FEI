@@ -207,6 +207,14 @@ Dos parámetros independientes ([07-configurabilidad.md](07-configurabilidad.md)
 
 El sistema genera los grupos y los partidos de zona. La organización puede revisar antes de confirmar.
 
+**Se sortea con la inscripción cerrada** (`inscripciones_cerradas`), y solo entran los inscriptos que pagaron. Cada categoría se sortea por separado: es un `Torneo` aparte, con su propio ranking.
+
+**El sorteo queda como borrador hasta confirmarlo** ([decisión 014](decisiones/014-borrador-del-sorteo.md)). Cambiar el modo de distribución reparte de nuevo con la misma siembra; "volver a sortear" vuelve a sortear también el orden entre los empatados en puntos. Al confirmar se generan los partidos de zona, con vencimiento en el último día de la fase de grupos del cronograma, y el torneo pasa a `zonas_generadas`. Confirmar no se deshace.
+
+**Si no se llenó el cupo**, se respeta la cantidad de zonas del formato y algunas quedan de 3. Con menos de 3 por zona no se puede sortear ([decisión 015](decisiones/015-zonas-con-menos-inscriptos.md)).
+
+Por ahora solo está el modo `automatico`; `asistido` y `manual` dependen de la decisión abierta 6.
+
 **Si hay cuadro consuelo** (parámetro del torneo), se reserva desde el sorteo la estructura de ambos cuadros.
 
 ---

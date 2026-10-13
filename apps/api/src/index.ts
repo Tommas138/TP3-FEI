@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { manejarErrores } from './middleware/errores';
 import { authRouter } from './modules/auth/auth.routes';
+import { sorteoRouter } from './modules/competencia/sorteo.routes';
 import { jugadoresRouter } from './modules/jugadores/jugadores.routes';
 import { organizacionesRouter } from './modules/organizaciones/organizaciones.routes';
 import { importacionesRouter } from './modules/padron/importacion/importaciones.routes';
@@ -18,6 +19,8 @@ app.get('/api/salud', (_req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/organizaciones/:slug/jugadores', jugadoresRouter);
+// Antes que torneosRouter, que también recibe todo lo que cuelga de /torneos.
+app.use('/api/organizaciones/:slug/torneos/:id/sorteo', sorteoRouter);
 app.use('/api/organizaciones/:slug/torneos', torneosRouter);
 app.use('/api/organizaciones/:slug/importaciones', importacionesRouter);
 app.use('/api/organizaciones', organizacionesRouter);

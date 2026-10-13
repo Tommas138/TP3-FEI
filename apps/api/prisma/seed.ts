@@ -29,6 +29,9 @@ import {
   MotivoMovimiento,
   EstadoTorneo,
   ModoInscripcion,
+  EstadoInscripcion,
+  MedioPago,
+  EstadoPago,
 } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
@@ -233,6 +236,39 @@ async function main() {
     },
   });
 
+  // --- un torneo con la inscripción cerrada, listo para el sorteo (F05) ---
+  // Cerrar la inscripción es F13, que todavía no existe: este torneo es la forma de probar el
+  // sorteo de punta a punta. Suelto, para no tocar el ranking, pero se siembra con él.
+  // 24 inscriptos en 6 zonas de 4; varios con 0 puntos, así se ve el azar entre empatados.
+  const inscriptosCopa = await prisma.jugador.findMany({
+    where: { organizacionId: org.id, categoriaId: tercera.id },
+    orderBy: { id: 'asc' },
+    take: 24,
+  });
+  const copa = await prisma.torneo.create({
+    data: {
+      organizacionId: org.id,
+      categoriaId: tercera.id,
+      etapaId: null,
+      nombre: 'Copa Confluencia',
+      edicion: 'Copa Confluencia 2026',
+      estado: EstadoTorneo.INSCRIPCIONES_CERRADAS,
+      cupo: 24,
+      precio: 45000,
+      modoInscripcion: ModoInscripcion.CERRADA,
+      cantidadGrupos: 6,
+      cierreInscripcion: diasAtras(1),
+      fechaInicio: diasAdelante(6),
+      inscripciones: {
+        create: inscriptosCopa.map((j) => ({
+          jugadorId: j.id,
+          estado: EstadoInscripcion.PAGADA,
+          pago: { create: { medio: MedioPago.TRANSFERENCIA, estado: EstadoPago.APROBADO, monto: 45000 } },
+        })),
+      },
+    },
+  });
+
   // --- verificación ---
   // Suma simple: vale porque en el seed hay un solo movimiento por etapa.
   // El ranking real toma, por cada etapa, el movimiento más reciente.
@@ -261,6 +297,7 @@ async function main() {
     );
   }
   console.log('Ranking verificado: el primero suma 165 y el último 0.\n');
+  console.log(`Sorteo listo para probar en /torneos/${copa.id}/sorteo (Copa Confluencia · Tercera)\n`);
 
   await crearLigaDelValle();
 

@@ -175,7 +175,9 @@ Cascada lineal. **Vale el primer criterio que rompa la igualdad.**
 
 **Lo que el criterio 6 no resuelve.** El enfrentamiento directo solo desempata entre dos jugadores. Si llegan empatados tres o más, o si los dos todavía no jugaron entre ellos, se pasa al criterio 7 también dentro del grupo: va primero el mejor rankeado al inicio del torneo, que es su posición de siembra. El reglamento no lo define: es una decisión nuestra ([decisión 017](decisiones/017-empates-que-el-enfrentamiento-directo-no-resuelve.md)).
 
-El mismo procedimiento se usa para comparar entre grupos cuando hay que definir, por ejemplo, un "mejor tercero" para ubicar posiciones en los cuadros.
+El mismo procedimiento se usa para comparar entre grupos cuando hay que definir, por ejemplo, un "mejor tercero" para ubicar posiciones en los cuadros. Entre grupos no hay partido entre ambos: se salta el criterio 6.
+
+**Grupos de distinto tamaño.** Si no se llenó el cupo y se comparan grupos de 4 con grupos de 3, en cada grupo de 4 se descarta el partido contra el último, para que todos comparen la misma cantidad de partidos. Es lo que hacen la FIFA y la UEFA con grupos desiguales. El reglamento no lo define: es una decisión nuestra ([decisión 018](decisiones/018-comparar-zonas-de-distinto-tamano.md)).
 
 **En la plataforma:** la cascada es fija en v1, porque coincide con la práctica habitual ([07](07-configurabilidad.md) §3). Al ser una lista de comparadores, reordenarla para otro circuito es cambiar un array.
 

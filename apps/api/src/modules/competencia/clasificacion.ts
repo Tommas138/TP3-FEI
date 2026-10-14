@@ -181,3 +181,52 @@ export function tablaDeZona(integrantes: Integrante[], partidos: PartidoDeLaTabl
     desempateConElSiguiente,
   }));
 }
+
+// Entre zonas no hay un partido entre ambos: se usa la misma cascada sin ese criterio.
+// El ranking sigue desempatando, porque la posición de siembra es del torneo, no de la zona.
+export const CASCADA_ENTRE_ZONAS = CASCADA_DE_ZONA.filter((c) => c.criterio !== 'ENFRENTAMIENTO_DIRECTO');
+
+export type ZonaConPartidos = { grupo: string; integrantes: Integrante[]; partidos: PartidoDeLaTabla[] };
+
+export type FilaEntreZonas = FilaDeTabla & {
+  grupo: string;
+  // Posición que ocupa en su zona: es la misma para todas las filas que se comparan.
+  posicionEnZona: number;
+};
+
+// Compara a los que terminaron en el mismo puesto de zonas distintas: por ejemplo, para
+// elegir al mejor tercero (02-dominio.md §6). Las zonas que no tienen ese puesto no entran.
+//
+// Si las zonas que se comparan no son del mismo tamaño, en las más grandes se descartan los
+// partidos contra los que quedaron debajo del tamaño de la más chica: con zonas de 3 y de 4,
+// el partido contra el último de cada zona de 4. Así todos comparan la misma cantidad de
+// partidos (decisión 018).
+export function compararEntreZonas(zonas: ZonaConPartidos[], posicionEnZona: number): FilaEntreZonas[] {
+  const conEsePuesto = zonas.filter((z) => z.integrantes.length >= posicionEnZona);
+  const menorZona = Math.min(...conEsePuesto.map((z) => z.integrantes.length));
+
+  const filas = conEsePuesto.map(({ grupo, integrantes, partidos }) => {
+    const tabla = tablaDeZona(integrantes, partidos);
+    const { jugadorId, posicionSiembra } = tabla[posicionEnZona - 1];
+    const sobrantes = new Set(tabla.slice(menorZona).map((f) => f.jugadorId));
+    const comparables = partidos.filter((p) => !sobrantes.has(p.jugadorAId) && !sobrantes.has(p.jugadorBId));
+    const estadisticas = estadisticasDeZona(
+      integrantes.filter((i) => !sobrantes.has(i.jugadorId)),
+      comparables,
+    ).find((e) => e.jugadorId === jugadorId)!;
+    return { grupo, fila: { ...estadisticas, posicionSiembra } };
+  });
+
+  const grupoDe = new Map(filas.map(({ grupo, fila }) => [fila.jugadorId, grupo]));
+  return ordenarPorCascada(
+    filas.map((f) => f.fila),
+    CASCADA_ENTRE_ZONAS,
+    [],
+  ).map(({ fila, desempateConElSiguiente }, i) => ({
+    ...fila,
+    grupo: grupoDe.get(fila.jugadorId)!,
+    posicionEnZona,
+    posicion: i + 1,
+    desempateConElSiguiente,
+  }));
+}

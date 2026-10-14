@@ -47,5 +47,5 @@ En `apps/api/src/modules/competencia/clasificacion.ts` son los dos últimos comp
 ## Qué se resigna
 
 - **En un empate de tres, ganarles a los otros dos no alcanza:** clasifica el mejor rankeado. Si POLENTA lo resuelve de otra forma, cambia el comparador `enfrentamientoDirecto`.
-- **En un torneo sin ranking, el último desempate es el azar del sorteo.** No hay otro dato con qué desempatar, pero en la pantalla se va a leer como "ranking": el texto tiene que contemplarlo.
+- **En un torneo sin ranking, el último desempate es el azar del sorteo.** No hay otro dato con qué desempatar, pero en la pantalla se va a leer como "ranking": el texto tiene que contemplarlo. *Resuelto en `explicarDesempate()` (`packages/shared/src/desempate.ts`): sin ranking dice "desempata el sorteo".*
 - **Va más allá del reglamento escrito.** Se suma a las preguntas para el organizador.

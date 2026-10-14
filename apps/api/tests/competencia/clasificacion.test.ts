@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  compararEntreZonas,
   estadisticasDeZona,
   tablaDeZona,
   type EstadoPartido,
   type FilaDeTabla,
   type PartidoDeLaTabla,
+  type ZonaConPartidos,
 } from '../../src/modules/competencia/clasificacion';
 
 // Un partido jugado a partir del marcador, visto desde el jugador A: '6-4 3-6 [10-8]'.
@@ -217,5 +219,108 @@ describe('tablaDeZona', () => {
 
     expect(orden(tabla)).toEqual([3, 1, 2]);
     expect(desempates(tabla)).toEqual(['RANKING', 'RANKING', null]);
+  });
+});
+
+// Una zona con sus integrantes y la posición de siembra de cada uno en el torneo.
+function zona(grupo: string, siembra: Record<number, number>, partidos: PartidoDeLaTabla[]): ZonaConPartidos {
+  const integrantes = Object.entries(siembra).map(([jugadorId, posicionSiembra]) => ({ jugadorId: Number(jugadorId), posicionSiembra }));
+  return { grupo, integrantes, partidos };
+}
+
+describe('compararEntreZonas', () => {
+  it('compara a los que terminaron en el mismo puesto con la cascada de la zona', () => {
+    // Los segundos ganaron un partido y 12 games, pero 2 no cedió ninguno y 12 cedió 8.
+    const zonas = [
+      zona('A', { 1: 1, 2: 4, 3: 5 }, [jugado(1, 2, '6-0 6-0'), jugado(2, 3, '6-0 6-0'), jugado(1, 3, '6-0 6-0')]),
+      zona('B', { 11: 2, 12: 3, 13: 6 }, [jugado(11, 12, '6-0 6-0'), jugado(12, 13, '6-4 6-4'), jugado(11, 13, '6-0 6-0')]),
+    ];
+    const segundos = compararEntreZonas(zonas, 2);
+
+    expect(segundos.map((f) => [f.grupo, f.jugadorId])).toEqual([
+      ['A', 2],
+      ['B', 12],
+    ]);
+    expect(segundos.map((f) => f.posicionEnZona)).toEqual([2, 2]);
+    expect(desempates(segundos)).toEqual(['DIFERENCIA_GAMES', null]);
+  });
+
+  it('no usa el enfrentamiento directo: entre zonas, lo que queda igual lo define el ranking', () => {
+    // Los dos primeros ganaron lo mismo por el mismo marcador. 11 está mejor sembrado.
+    const zonas = [
+      zona('A', { 1: 3, 2: 4, 3: 5 }, [jugado(1, 2, '6-4 6-4'), jugado(1, 3, '6-4 6-4')]),
+      zona('B', { 11: 1, 12: 2, 13: 6 }, [jugado(11, 12, '6-4 6-4'), jugado(11, 13, '6-4 6-4')]),
+    ];
+    const primeros = compararEntreZonas(zonas, 1);
+
+    expect(orden(primeros)).toEqual([11, 1]);
+    expect(desempates(primeros)).toEqual(['RANKING', null]);
+  });
+
+  it('en una zona de 4 descarta el partido contra el último si se compara con una zona de 3', () => {
+    // El tercero de A, de 4, le ganó al último y suma un partido más que el tercero de B, de 3.
+    // Sin ese partido, los dos perdieron todo, y 13 sale mejor por haber hecho más games.
+    const zonaDe4 = zona('A', { 1: 1, 2: 3, 3: 5, 4: 7 }, [
+      jugado(1, 2, '6-0 6-0'),
+      jugado(1, 3, '6-0 6-0'),
+      jugado(1, 4, '6-0 6-0'),
+      jugado(2, 3, '6-0 6-0'),
+      jugado(2, 4, '6-0 6-0'),
+      jugado(3, 4, '6-0 6-0'),
+    ]);
+    const zonaDe3 = zona('B', { 11: 2, 12: 4, 13: 6 }, [
+      jugado(11, 12, '6-0 6-0'),
+      jugado(11, 13, '6-2 6-2'),
+      jugado(12, 13, '6-2 6-2'),
+    ]);
+    const terceros = compararEntreZonas([zonaDe4, zonaDe3], 3);
+
+    expect(terceros.map((f) => [f.grupo, f.jugadorId])).toEqual([
+      ['B', 13],
+      ['A', 3],
+    ]);
+    expect(terceros[1]).toMatchObject({ partidosJugados: 2, partidosGanados: 0, gamesGanados: 0, gamesPerdidos: 24 });
+    expect(desempates(terceros)).toEqual(['GAMES_GANADOS', null]);
+  });
+
+  it('el último de cada zona se ubica con la tabla completa, no con los partidos descartados', () => {
+    // En A, 4 le ganó a 1, pero perdió los otros dos y es último. Al descartar sus partidos,
+    // 1 queda invicto, igual que el primero de B, y los separa el ranking.
+    const zonaDe4 = zona('A', { 1: 1, 2: 3, 3: 5, 4: 7 }, [
+      jugado(1, 2, '6-0 6-0'),
+      jugado(1, 3, '6-0 6-0'),
+      jugado(4, 1, '6-0 6-0'),
+      jugado(2, 3, '6-0 6-0'),
+      jugado(2, 4, '6-0 6-0'),
+      jugado(3, 4, '6-0 6-0'),
+    ]);
+    const zonaDe3 = zona('B', { 11: 2, 12: 4, 13: 6 }, [jugado(11, 12, '6-0 6-0'), jugado(11, 13, '6-0 6-0'), jugado(12, 13, '6-0 6-0')]);
+    const primeros = compararEntreZonas([zonaDe4, zonaDe3], 1);
+
+    expect(primeros[0]).toMatchObject({ grupo: 'A', jugadorId: 1, partidosJugados: 2, partidosGanados: 2 });
+    expect(desempates(primeros)).toEqual(['RANKING', null]);
+  });
+
+  it('con todas las zonas del mismo tamaño no descarta nada', () => {
+    const partidosDe4 = (a: number, b: number, c: number, d: number) => [
+      jugado(a, b, '6-0 6-0'),
+      jugado(a, c, '6-0 6-0'),
+      jugado(a, d, '6-0 6-0'),
+      jugado(b, c, '6-0 6-0'),
+      jugado(b, d, '6-0 6-0'),
+      jugado(c, d, '6-0 6-0'),
+    ];
+    const zonas = [zona('A', { 1: 1, 2: 3, 3: 5, 4: 7 }, partidosDe4(1, 2, 3, 4)), zona('B', { 11: 2, 12: 4, 13: 6, 14: 8 }, partidosDe4(11, 12, 13, 14))];
+
+    expect(compararEntreZonas(zonas, 3).every((f) => f.partidosJugados === 3)).toBe(true);
+  });
+
+  it('los cuartos se comparan solo entre las zonas de 4, sin descartar nada', () => {
+    const zonaDe4 = zona('A', { 1: 1, 2: 3, 3: 5, 4: 7 }, [jugado(1, 4, '6-0 6-0'), jugado(2, 4, '6-0 6-0'), jugado(3, 4, '6-0 6-0')]);
+    const zonaDe3 = zona('B', { 11: 2, 12: 4, 13: 6 }, []);
+    const cuartos = compararEntreZonas([zonaDe4, zonaDe3], 4);
+
+    expect(cuartos).toHaveLength(1);
+    expect(cuartos[0]).toMatchObject({ grupo: 'A', jugadorId: 4, partidosJugados: 3, posicion: 1, desempateConElSiguiente: null });
   });
 });

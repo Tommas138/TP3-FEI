@@ -5,6 +5,7 @@
 @slug = polenta
 @token = pegar-aca-el-token
 @importacion = 1
+@torneo = 1
 
 ### Importación del padrón (F03): sube la planilla y la procesa con IA. Tarda ~20 s.
 POST {{base}}/organizaciones/{{slug}}/importaciones
@@ -41,4 +42,8 @@ Content-Type: application/json
 
 ### Descartar sin guardar nada
 POST {{base}}/organizaciones/{{slug}}/importaciones/{{importacion}}/descartar
+Authorization: Bearer {{token}}
+
+### Posiciones de las zonas (F07). El torneo tiene que tener el sorteo confirmado.
+GET {{base}}/organizaciones/{{slug}}/torneos/{{torneo}}/posiciones
 Authorization: Bearer {{token}}

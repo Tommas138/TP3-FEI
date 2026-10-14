@@ -4,4 +4,5 @@ export * from './schemas/jugador';
 export * from './schemas/torneo';
 export * from './schemas/importacion';
 export * from './schemas/sorteo';
+export * from './schemas/posiciones';
 export * from './formato';

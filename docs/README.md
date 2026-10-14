@@ -114,6 +114,7 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~¿Cuántas zonas se arman si no se llena el cupo?~~ **Las del formato, con zonas de 3 si hace falta y nunca menos** ([decisión 015](decisiones/015-zonas-con-menos-inscriptos.md)). Cambiar la cantidad de zonas alteraría el formato publicado y los cuadros
 - ~~¿El W.O. guarda sets 6-0 6-0 en la base?~~ **No: se arman al calcular**, a partir del estado y el ganador ([decisión 016](decisiones/016-walkover-sin-sets-guardados.md)). Así la base no registra como jugado un partido que no se jugó
 - ~~¿Qué pasa si el enfrentamiento directo no desempata?~~ **Define el ranking al inicio del torneo**, que es la posición de siembra ([decisión 017](decisiones/017-empates-que-el-enfrentamiento-directo-no-resuelve.md)). El enfrentamiento directo solo vale entre dos; con tres o más empatados, o si todavía no jugaron entre ellos, se usa el criterio que el reglamento ya tiene para el último desempate
+- ~~¿Cómo se compara entre zonas de 3 y de 4?~~ **Se descarta el partido contra el último de cada zona de 4** ([decisión 018](decisiones/018-comparar-zonas-de-distinto-tamano.md)). Así todos comparan la misma cantidad de partidos; es lo que hacen la FIFA y la UEFA con grupos desiguales
 - ~~¿Qué fecha llevan los puntos importados de la planilla?~~ **El 1° de enero del año del casillero** ([decisión 008](decisiones/008-fecha-de-los-movimientos-importados.md)). La planilla no tiene fechas y el ranking solo necesita que un torneo real de esa etapa y ese año le gane al importado
 
 ---
@@ -153,6 +154,8 @@ Lista para llevar a la próxima charla. Las respondidas se tachan.
 
 12. Si **tres jugadores** terminan la zona empatados en partidos, sets y games, ¿cómo lo resuelven? ¿Y pasó alguna vez?
     *Contexto: el reglamento habla del "ganador del partido entre ambos", que solo sirve entre dos. Hoy el sistema pone primero al mejor rankeado al inicio del torneo ([decisión 017](decisiones/017-empates-que-el-enfrentamiento-directo-no-resuelve.md)).*
+13. Si no se llena el cupo y quedan zonas de 3 y de 4, ¿cómo comparan a los de distintas zonas, por ejemplo para elegir un mejor tercero?
+    *Contexto: en una zona de 4 se juega un partido más. Hoy el sistema descarta el partido contra el último de cada zona de 4 ([decisión 018](decisiones/018-comparar-zonas-de-distinto-tamano.md)).*
 
 ### Resultados
 

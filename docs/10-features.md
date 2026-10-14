@@ -159,6 +159,8 @@ El sistema ordenará automáticamente la tabla de posiciones de cada grupo aplic
 
 **Entrega: 50%**
 
+**Estado:** implementada en la API. La tabla de cada zona se calcula en cada consulta (`GET .../torneos/:id/posiciones`) con la línea de corte hacia cada cuadro, y cada desempate se explica en una línea (`explicarDesempate()` en `packages/shared`). Lo que el enfrentamiento directo no resuelve lo define el ranking al inicio del torneo ([decisión 017](decisiones/017-empates-que-el-enfrentamiento-directo-no-resuelve.md)); entre zonas de 3 y de 4 se descarta el partido contra el último ([decisión 018](decisiones/018-comparar-zonas-de-distinto-tamano.md)). Por ahora la consulta es solo para la organización ([decisión 019](decisiones/019-acceso-a-las-posiciones.md)). La tabla en pantalla entra con Cargar resultado (F06) y Mi zona (F11).
+
 ---
 
 ## F08 — Cuadro principal y cuadro consuelo

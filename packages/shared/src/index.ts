@@ -6,3 +6,4 @@ export * from './schemas/importacion';
 export * from './schemas/sorteo';
 export * from './schemas/posiciones';
 export * from './formato';
+export * from './desempate';

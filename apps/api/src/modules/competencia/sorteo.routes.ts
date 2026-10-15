@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { sortearSchema } from '@setpoint/shared';
+import { cargarZonasSchema, sortearSchema } from '@setpoint/shared';
 import { autenticar } from '../../middleware/autenticar';
 import { validar } from '../../middleware/validar';
-import { confirmarSorteo, obtenerSorteo, sortear } from './sorteo.service';
+import { cargarZonas, confirmarSorteo, obtenerSorteo, sortear } from './sorteo.service';
 
 // Se monta en /api/organizaciones/:slug/torneos/:id/sorteo: mergeParams trae el slug y el id.
 // El id es el de un torneo (una categoría), no el de la convocatoria.
@@ -19,6 +19,12 @@ sorteoRouter.get('/', async (req, res) => {
 sorteoRouter.post('/', validar(sortearSchema), async (req, res) => {
   const { slug, id } = req.params as { slug: string; id: string };
   res.json(await sortear(slug, res.locals.usuarioId, Number(id), req.body));
+});
+
+// Guarda como borrador las zonas de un sorteo hecho en persona (modo manual).
+sorteoRouter.post('/manual', validar(cargarZonasSchema), async (req, res) => {
+  const { slug, id } = req.params as { slug: string; id: string };
+  res.json(await cargarZonas(slug, res.locals.usuarioId, Number(id), req.body));
 });
 
 // Confirma el borrador y genera los partidos de zona. No se deshace.

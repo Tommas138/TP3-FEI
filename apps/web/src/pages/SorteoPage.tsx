@@ -1,4 +1,11 @@
-import type { ModoDistribucion, Sorteo, ZonaSorteada } from '@setpoint/shared';
+import {
+  letrasDeZonas,
+  tamanosDeZona,
+  type ModoDistribucion,
+  type ModoSorteo,
+  type Sorteo,
+  type ZonaSorteada,
+} from '@setpoint/shared';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Boton } from '../components/Boton';
@@ -7,14 +14,19 @@ import { Numero } from '../components/Numero';
 import { leerSesion, type Sesion } from '../features/auth/sesion';
 import { useCerrarSesion } from '../features/auth/useCerrarSesion';
 import { useSesionInvalida } from '../features/auth/useSesionInvalida';
+import { CargaManual } from '../features/competencia/CargaManual';
 import { TarjetaOpciones } from '../features/competencia/TarjetaOpciones';
 import { TarjetaZona } from '../features/competencia/TarjetaZona';
-import { useConfirmarSorteo, useSorteo, useSortear } from '../features/competencia/useSorteo';
-import { partidosDeZona, sumaDeSiembra } from '../features/competencia/zonas';
+import { useCargarZonas, useConfirmarSorteo, useSorteo, useSortear } from '../features/competencia/useSorteo';
+import {
+  asignacionDeLasZonas,
+  partidosDeZona,
+  sumaDeSiembra,
+  zonasDeLaAsignacion,
+  type Asignacion,
+} from '../features/competencia/zonas';
 import { iniciales, navegacionOrganizador } from '../features/organizador/encabezado';
 import { ErrorApi } from '../lib/api';
-
-type ModoSorteo = 'automatico' | 'asistido' | 'manual';
 
 const distribuciones: { valor: ModoDistribucion; etiqueta: string }[] = [
   { valor: 'serpentina', etiqueta: 'Serpentina' },
@@ -28,12 +40,18 @@ const ayudaDistribucion: Record<ModoDistribucion, string> = {
   bombos: 'Sortea al azar dentro de cada franja del ranking, como en un sorteo presencial con bombos.',
 };
 
-// Sortear en pantalla y cargar a mano todavía no están: decisión abierta 6 del README de docs.
+// Sortear en pantalla todavía no está.
 const ejecutores: { valor: ModoSorteo; etiqueta: string; deshabilitada?: boolean }[] = [
   { valor: 'automatico', etiqueta: 'Automático' },
   { valor: 'asistido', etiqueta: 'En pantalla', deshabilitada: true },
-  { valor: 'manual', etiqueta: 'Lo cargo a mano', deshabilitada: true },
+  { valor: 'manual', etiqueta: 'Lo cargo a mano' },
 ];
+
+const ayudaEjecutor: Record<ModoSorteo, string> = {
+  automatico: 'El sistema sortea y vos revisás el resultado.',
+  asistido: 'El sistema sortea en pantalla, para proyectarlo durante la reunión.',
+  manual: 'Si el sorteo lo hacen presencial con bombos y lo graban, cargá el resultado a mano.',
+};
 
 export function SorteoPage() {
   const sesion = leerSesion();
@@ -132,6 +150,8 @@ function textoDeError(error: Error, sorteo: Sorteo): ReactNode {
           zonas de al menos <Numero>3</Numero>.
         </>
       );
+    case 'ZONAS_INVALIDAS':
+      return 'Las zonas no tienen la cantidad de jugadores que corresponde. Revisalas antes de confirmar.';
     case 'SORTEO_DESACTUALIZADO':
       return 'Cambiaron los inscriptos desde el último sorteo. Volvé a sortear antes de confirmar.';
     case 'TORNEO_NO_SORTEABLE':
@@ -146,17 +166,30 @@ function textoDeError(error: Error, sorteo: Sorteo): ReactNode {
 function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
   const slug = sesion.organizacion.slug;
   const sortear = useSortear(slug, sorteo.torneoId);
+  const cargar = useCargarZonas(slug, sorteo.torneoId);
   const confirmar = useConfirmarSorteo(slug, sorteo.torneoId);
-  const [ejecutor, setEjecutor] = useState<ModoSorteo>('automatico');
+  // Si el borrador se cargó a mano, se sigue desde ahí.
+  const borradorManual = sorteo.modoSorteo === 'manual' && sorteo.zonas !== null;
+  const [ejecutor, setEjecutor] = useState<ModoSorteo>(borradorManual ? 'manual' : 'automatico');
+  const [asignacion, setAsignacion] = useState<Asignacion>(() => (borradorManual ? asignacionDeLasZonas(sorteo.zonas) : {}));
 
   const sorteable = sorteo.estado === 'inscripciones_cerradas' && !sorteo.confirmado;
-  const ocupado = sortear.isPending || confirmar.isPending;
-  const error = sortear.error ?? confirmar.error;
+  const ocupado = sortear.isPending || cargar.isPending || confirmar.isPending;
+  const error = sortear.error ?? cargar.error ?? confirmar.error;
   useSesionInvalida(error);
 
   // Mientras se sortea se marca el modo pedido, no el que estaba.
   const distribucion = sortear.isPending ? sortear.variables.modoDistribucion : sorteo.modoDistribucion;
   const { zonas } = sorteo;
+
+  // Modo manual: las zonas como las va armando la organización, antes de guardarlas.
+  const cargandoAMano = ejecutor === 'manual' && !sorteo.confirmado;
+  const zonasManuales = zonasDeLaAsignacion(sorteo.jugadores, letrasDeZonas(sorteo.cantidadGrupos), asignacion);
+  const { menor, mayor } = tamanosDeZona(sorteo.inscriptos, sorteo.cantidadGrupos);
+  const minimoPorZona = Math.max(menor, 3);
+  const sinUbicar = sorteo.jugadores.length - Object.keys(asignacion).length;
+  const zonaCorta = zonasManuales.find((z) => z.integrantes.length < minimoPorZona);
+  const cargaCompleta = sinUbicar === 0 && zonaCorta === undefined;
 
   // La primera vez que se abre con la inscripción cerrada se sortea solo, con el modo del torneo,
   // para mostrar cómo quedarían. El resultado queda como borrador hasta confirmar.
@@ -174,9 +207,23 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
     pedirSorteo({ modoDistribucion, nuevaSiembra });
   }
 
+  function mover(jugadorId: number, grupo: string | null) {
+    cargar.reset();
+    setAsignacion((anterior) => {
+      const nueva = { ...anterior };
+      if (grupo === null) delete nueva[jugadorId];
+      else nueva[jugadorId] = grupo;
+      return nueva;
+    });
+  }
+
   function confirmarYPublicar() {
     sortear.reset();
-    confirmar.mutate();
+    cargar.reset();
+    if (!cargandoAMano) return confirmar.mutate();
+    // Lo cargado a mano se guarda como borrador y recién ahí se confirma.
+    const datos = { zonas: zonasManuales.map((z) => ({ grupo: z.grupo, jugadorIds: z.integrantes.map((j) => j.jugadorId) })) };
+    cargar.mutate(datos, { onSuccess: () => confirmar.mutate() });
   }
 
   return (
@@ -213,30 +260,32 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
           <TarjetaOpciones
             titulo="Cómo se reparten"
             aclaracion={sorteo.usaRanking ? 'usa el ranking vigente' : 'sin ranking, la siembra es al azar'}
-            opciones={distribuciones.map((d) => ({ ...d, deshabilitada: !sorteable || ocupado }))}
+            opciones={distribuciones.map((d) => ({ ...d, deshabilitada: !sorteable || ocupado || cargandoAMano }))}
             elegida={distribucion}
             alElegir={(modo) => {
               if (modo !== distribucion) repartir(modo, false);
             }}
-            ayuda={ayudaDistribucion[distribucion]}
+            ayuda={ejecutor === 'manual' ? 'Cargado a mano, el reparto es el del sorteo presencial.' : ayudaDistribucion[distribucion]}
           />
           <TarjetaOpciones
             titulo="Quién lo ejecuta"
             aclaracion="podés revisarlo antes de publicar"
-            opciones={ejecutores}
+            opciones={ejecutores.map((e) => ({ ...e, deshabilitada: e.deshabilitada || !sorteable || ocupado }))}
             elegida={ejecutor}
             alElegir={setEjecutor}
-            ayuda="El sistema sortea y vos revisás el resultado. Sortear en pantalla y cargar a mano un sorteo presencial todavía no están disponibles."
+            ayuda={ayudaEjecutor[ejecutor]}
           />
         </div>
 
         <section className="flex flex-col gap-3.5">
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <h2 className="text-xl font-semibold tracking-[-0.025em]">{sorteo.confirmado ? 'Así quedaron' : 'Así quedarían'}</h2>
-            {zonas && <ResumenDeSumas zonas={zonas} />}
+            {zonas && !cargandoAMano && <ResumenDeSumas zonas={zonas} />}
           </div>
 
-          {zonas ? (
+          {cargandoAMano && sorteable ? (
+            <CargaManual jugadores={sorteo.jugadores} zonas={zonasManuales} capacidad={mayor} alMover={mover} />
+          ) : zonas ? (
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               {zonas.map((zona) => (
                 <TarjetaZona key={zona.grupo} zona={zona} />
@@ -250,7 +299,7 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
 
           {error && <p className="text-sm text-rojo-texto">{textoDeError(error, sorteo)}</p>}
 
-          {zonas && (
+          {(zonas || cargandoAMano) && (
             <p className="text-sm text-gris-500">El número es la posición de siembra, según el ranking al momento del sorteo.</p>
           )}
         </section>
@@ -258,11 +307,26 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
 
       <footer className="mt-auto flex flex-wrap items-center justify-between gap-5 border-t border-linea px-7 py-[18px]">
         <div className="flex flex-col gap-1">
-          {zonas && (
+          {cargandoAMano && !cargaCompleta ? (
             <p className="text-[15px] font-semibold">
-              {sorteo.confirmado ? 'Se generaron' : 'Al confirmar se generan'} <Numero>{partidosDeZona(zonas)}</Numero>{' '}
-              partidos de zona
+              {sinUbicar > 0 ? (
+                <>
+                  Faltan ubicar <Numero>{sinUbicar}</Numero> {sinUbicar === 1 ? 'jugador' : 'jugadores'}
+                </>
+              ) : (
+                <>
+                  La zona {zonaCorta?.grupo} tiene <Numero>{zonaCorta?.integrantes.length}</Numero>: todas necesitan al menos{' '}
+                  <Numero>{minimoPorZona}</Numero>
+                </>
+              )}
             </p>
+          ) : (
+            (zonas || cargandoAMano) && (
+              <p className="text-[15px] font-semibold">
+                {sorteo.confirmado ? 'Se generaron' : 'Al confirmar se generan'}{' '}
+                <Numero>{partidosDeZona(cargandoAMano ? zonasManuales : (zonas ?? []))}</Numero> partidos de zona
+              </p>
+            )
           )}
           <p className="text-sm text-gris-500">
             Los jugadores tienen <Numero>{sorteo.plazoGruposDias}</Numero> días para jugar la fase de grupos.
@@ -270,17 +334,19 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
         </div>
         {!sorteo.confirmado && (
           <div className="flex gap-2.5">
-            <Boton grande disabled={!sorteable || ocupado} onClick={() => repartir(distribucion, true)}>
-              Volver a sortear
-            </Boton>
+            {!cargandoAMano && (
+              <Boton grande disabled={!sorteable || ocupado} onClick={() => repartir(distribucion, true)}>
+                Volver a sortear
+              </Boton>
+            )}
             <Boton
               variante="principal"
               grande
               className="font-semibold"
-              disabled={!sorteable || ocupado || zonas === null}
+              disabled={!sorteable || ocupado || (cargandoAMano ? !cargaCompleta : zonas === null)}
               onClick={confirmarYPublicar}
             >
-              {confirmar.isPending ? 'Publicando…' : 'Confirmar y publicar'}
+              {cargar.isPending || confirmar.isPending ? 'Publicando…' : 'Confirmar y publicar'}
             </Boton>
           </div>
         )}

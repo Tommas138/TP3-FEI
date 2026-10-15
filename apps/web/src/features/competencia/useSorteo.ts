@@ -1,6 +1,6 @@
-import type { DatosSortearEntrada, Sorteo } from '@setpoint/shared';
+import type { DatosCargarZonas, DatosSortearEntrada, Sorteo } from '@setpoint/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { confirmarSorteo, obtenerSorteo, sortear } from './api';
+import { cargarZonas, confirmarSorteo, obtenerSorteo, sortear } from './api';
 
 const claveSorteo = (slug: string, id: number) => ['sorteo', slug, id];
 
@@ -12,7 +12,7 @@ export function useSorteo(slug: string, id: number) {
   });
 }
 
-// Las dos acciones devuelven el sorteo como quedó: se guarda directo en la caché.
+// Las acciones devuelven el sorteo como quedó: se guarda directo en la caché.
 function useGuardarEnCache(slug: string, id: number) {
   const queryClient = useQueryClient();
   return (sorteo: Sorteo) => queryClient.setQueryData(claveSorteo(slug, id), sorteo);
@@ -22,6 +22,15 @@ export function useSortear(slug: string, id: number) {
   const guardar = useGuardarEnCache(slug, id);
   return useMutation({
     mutationFn: (datos: DatosSortearEntrada) => sortear(slug, id, datos),
+    onSuccess: guardar,
+  });
+}
+
+// Guarda como borrador las zonas cargadas a mano (modo manual).
+export function useCargarZonas(slug: string, id: number) {
+  const guardar = useGuardarEnCache(slug, id);
+  return useMutation({
+    mutationFn: (datos: DatosCargarZonas) => cargarZonas(slug, id, datos),
     onSuccess: guardar,
   });
 }

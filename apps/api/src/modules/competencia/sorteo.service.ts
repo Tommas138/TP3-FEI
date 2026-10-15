@@ -2,15 +2,17 @@ import {
   EstadoInscripcion,
   EstadoTorneo,
   FasePartido,
-  ModoSorteo,
+  ModoSorteo as ModoSorteoPrisma,
   type ModoDistribucion as ModoPrisma,
   type Prisma,
 } from '@prisma/client';
 import {
   calcularFormato,
+  type DatosCargarZonas,
   type DatosSortear,
   type EstadoTorneo as ClaveEstado,
   type ModoDistribucion,
+  type ModoSorteo,
   type Sorteo,
 } from '@setpoint/shared';
 import { organizacionAdministrada } from '../../lib/permisos';
@@ -19,11 +21,13 @@ import { ErrorHttp } from '../../middleware/errores';
 import { puntosVigentes } from '../ranking/ranking';
 import {
   alcanzanParaLasZonas,
+  armarZonasManuales,
   distribuirEnZonas,
   generarPartidosDeZona,
   MINIMO_POR_ZONA,
   ordenarSiembra,
   siembraGuardada,
+  type Zona,
 } from './sorteo';
 
 // Sorteo y armado de zonas (F05). Mientras no se confirma, el resultado vive como borrador en
@@ -93,10 +97,23 @@ function aSorteo(torneo: TorneoConInscriptos): Sorteo {
     estado: torneo.estado.toLowerCase() as ClaveEstado,
     usaRanking: torneo.organizacion.usaRanking,
     modoDistribucion: torneo.modoDistribucion.toLowerCase() as ModoDistribucion,
+    modoSorteo: torneo.modoSorteo.toLowerCase() as ModoSorteo,
     confirmado: torneo.sorteoConfirmado,
     cantidadGrupos: torneo.cantidadGrupos,
     plazoGruposDias: torneo.plazoGruposDias,
     inscriptos: torneo.inscripciones.length,
+    // Los que no tienen siembra van al final, por apellido.
+    jugadores: torneo.inscripciones
+      .map((i) => ({
+        jugadorId: i.jugadorId,
+        nombre: i.jugador.nombre,
+        apellido: i.jugador.apellido,
+        posicionSiembra: i.posicionSiembra,
+      }))
+      .sort(
+        (a, b) =>
+          (a.posicionSiembra ?? Infinity) - (b.posicionSiembra ?? Infinity) || a.apellido.localeCompare(b.apellido, 'es'),
+      ),
     zonas: zonasGuardadas(torneo),
   };
 }
@@ -120,26 +137,58 @@ export async function obtenerSorteo(slug: string, usuarioId: number, torneoId: n
   return aSorteo(await torneoDeLaOrganizacion(organizacionId, torneoId));
 }
 
-// Sortea y guarda el resultado como borrador, reemplazando el anterior.
-export async function sortear(slug: string, usuarioId: number, torneoId: number, datos: DatosSortear) {
+// Las verificaciones que comparten el sorteo y la carga manual.
+async function torneoParaSortear(slug: string, usuarioId: number, torneoId: number) {
   const organizacionId = await organizacionAdministrada(slug, usuarioId);
   const torneo = await torneoDeLaOrganizacion(organizacionId, torneoId);
   verificarSorteable(torneo);
   if (!alcanzanParaLasZonas(torneo.inscripciones.length, torneo.cantidadGrupos)) {
     throw new ErrorHttp(409, 'INSCRIPTOS_INSUFICIENTES');
   }
+  return torneo;
+}
 
-  const guardada = datos.nuevaSiembra ? null : siembraGuardada(torneo.inscripciones);
-  const siembra = guardada ?? ordenarSiembra(await puntosDeLosInscriptos(torneo), Math.random);
+// La siembra del borrador si sigue sirviendo; si no, una nueva según el ranking.
+async function siembraDelTorneo(torneo: TorneoConInscriptos, nueva: boolean) {
+  const guardada = nueva ? null : siembraGuardada(torneo.inscripciones);
+  return guardada ?? ordenarSiembra(await puntosDeLosInscriptos(torneo), Math.random);
+}
+
+// Sortea y guarda el resultado como borrador, reemplazando el anterior.
+export async function sortear(slug: string, usuarioId: number, torneoId: number, datos: DatosSortear) {
+  const torneo = await torneoParaSortear(slug, usuarioId, torneoId);
+  const siembra = await siembraDelTorneo(torneo, datos.nuevaSiembra);
   const modo = datos.modoDistribucion.toUpperCase() as ModoPrisma;
   const zonas = distribuirEnZonas(siembra, torneo.cantidadGrupos, modo, Math.random);
 
+  await guardarBorrador(torneo, zonas, { modoDistribucion: modo, modoSorteo: ModoSorteoPrisma.AUTOMATICO });
+  return obtenerSorteo(slug, usuarioId, torneoId);
+}
+
+// Guarda como borrador las zonas de un sorteo hecho en persona (modo manual). La siembra se
+// calcula igual que al sortear: así cada zona muestra sus posiciones y sus sumas.
+export async function cargarZonas(slug: string, usuarioId: number, torneoId: number, datos: DatosCargarZonas) {
+  const torneo = await torneoParaSortear(slug, usuarioId, torneoId);
+  const siembra = await siembraDelTorneo(torneo, false);
+
+  const resultado = armarZonasManuales(datos.zonas, siembra, torneo.cantidadGrupos);
+  // Si los jugadores no coinciden, lo más probable es que alguien se haya inscripto o bajado mientras se cargaba.
+  if ('error' in resultado) {
+    throw new ErrorHttp(409, resultado.error === 'JUGADORES_DISTINTOS' ? 'SORTEO_DESACTUALIZADO' : 'ZONAS_INVALIDAS');
+  }
+
+  await guardarBorrador(torneo, resultado.zonas, { modoSorteo: ModoSorteoPrisma.MANUAL });
+  return obtenerSorteo(slug, usuarioId, torneoId);
+}
+
+// Reemplaza el borrador por estas zonas.
+async function guardarBorrador(torneo: TorneoConInscriptos, zonas: Zona[], datosTorneo: Prisma.TorneoUpdateManyMutationInput) {
   const inscripcionDe = new Map(torneo.inscripciones.map((i) => [i.jugadorId, i.id]));
   await prisma.$transaction(async (tx) => {
     // Con el estado como condición, un sorteo que llega después de confirmar no pisa las zonas.
     const { count } = await tx.torneo.updateMany({
       where: { id: torneo.id, estado: EstadoTorneo.INSCRIPCIONES_CERRADAS, sorteoConfirmado: false },
-      data: { modoDistribucion: modo, modoSorteo: ModoSorteo.AUTOMATICO },
+      data: datosTorneo,
     });
     if (count === 0) throw new ErrorHttp(409, 'TORNEO_NO_SORTEABLE');
 
@@ -154,8 +203,6 @@ export async function sortear(slug: string, usuarioId: number, torneoId: number,
       }
     }
   });
-
-  return obtenerSorteo(slug, usuarioId, torneoId);
 }
 
 // Último día de la fase de grupos según el cronograma del torneo, el mismo que se mostró al

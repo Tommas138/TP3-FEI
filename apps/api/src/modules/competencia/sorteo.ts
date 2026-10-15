@@ -1,6 +1,8 @@
 // Sorteo y armado de zonas (02-dominio.md §4).
 // Lógica pura: recibe jugadores, devuelve zonas y partidos. No toca la base.
 
+import { letrasDeZonas, tamanosDeZona } from '@setpoint/shared';
+
 // Mismos valores que el enum ModoDistribucion de Prisma.
 export type ModoDistribucion = 'SERPENTINA' | 'DIRECTA' | 'BOMBOS';
 
@@ -70,10 +72,7 @@ function ordenDeGrupos(modo: ModoDistribucion, vuelta: number, cantidadGrupos: n
 //   BOMBOS: al azar dentro de cada franja.
 // Si los jugadores no alcanzan para completar la última vuelta, quedan zonas con uno menos.
 export function distribuirEnZonas(siembra: number[], cantidadGrupos: number, modo: ModoDistribucion, azar: Azar): Zona[] {
-  const zonas: Zona[] = Array.from({ length: cantidadGrupos }, (_, i) => ({
-    grupo: String.fromCharCode('A'.charCodeAt(0) + i),
-    integrantes: [],
-  }));
+  const zonas: Zona[] = letrasDeZonas(cantidadGrupos).map((grupo) => ({ grupo, integrantes: [] }));
 
   for (let inicio = 0; inicio < siembra.length; inicio += cantidadGrupos) {
     const franja = siembra.slice(inicio, inicio + cantidadGrupos);
@@ -83,6 +82,46 @@ export function distribuirEnZonas(siembra: number[], cantidadGrupos: number, mod
     });
   }
   return zonas;
+}
+
+export type ZonaCargada = { grupo: string; jugadorIds: number[] };
+
+// Zonas de un sorteo hecho en persona y cargado a mano (modo manual). Tienen que estar todos
+// los de la siembra, una sola vez, en las zonas del formato y con los mismos tamaños que daría
+// el sorteo (decisión 015). La posición de siembra sale de la siembra, no de quien carga.
+//   JUGADORES_DISTINTOS: falta alguien, sobra alguien o alguien está dos veces.
+//   ZONAS_INVALIDAS: no son las zonas del formato o alguna quedó de un tamaño que no corresponde.
+export function armarZonasManuales(
+  cargadas: ZonaCargada[],
+  siembra: number[],
+  cantidadGrupos: number,
+): { zonas: Zona[] } | { error: 'JUGADORES_DISTINTOS' | 'ZONAS_INVALIDAS' } {
+  const letras = letrasDeZonas(cantidadGrupos);
+  if (cargadas.length !== cantidadGrupos || cargadas.some((z, i) => z.grupo !== letras[i])) {
+    return { error: 'ZONAS_INVALIDAS' };
+  }
+
+  const ids = cargadas.flatMap((z) => z.jugadorIds);
+  const enLaSiembra = new Set(siembra);
+  if (ids.length !== siembra.length || new Set(ids).size !== ids.length || ids.some((id) => !enLaSiembra.has(id))) {
+    return { error: 'JUGADORES_DISTINTOS' };
+  }
+
+  const { menor, mayor } = tamanosDeZona(siembra.length, cantidadGrupos);
+  const minimo = Math.max(menor, MINIMO_POR_ZONA);
+  if (cargadas.some((z) => z.jugadorIds.length < minimo || z.jugadorIds.length > mayor)) {
+    return { error: 'ZONAS_INVALIDAS' };
+  }
+
+  const posicion = new Map(siembra.map((jugadorId, i) => [jugadorId, i + 1]));
+  return {
+    zonas: cargadas.map(({ grupo, jugadorIds }) => ({
+      grupo,
+      integrantes: jugadorIds
+        .map((jugadorId) => ({ jugadorId, posicionSiembra: posicion.get(jugadorId)! }))
+        .sort((a, b) => a.posicionSiembra - b.posicionSiembra),
+    })),
+  };
 }
 
 // Todos contra todos dentro de cada zona: con 4 integrantes, 6 partidos.

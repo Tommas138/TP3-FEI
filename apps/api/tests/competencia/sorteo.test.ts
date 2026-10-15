@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   alcanzanParaLasZonas,
+  armarZonasManuales,
   distribuirEnZonas,
   generarPartidosDeZona,
   mezclar,
@@ -232,5 +233,122 @@ describe('alcanzanParaLasZonas', () => {
   it('alcanzan mientras ninguna zona quede con menos de 3', () => {
     expect(alcanzanParaLasZonas(24, 8)).toBe(true);
     expect(alcanzanParaLasZonas(23, 8)).toBe(false);
+  });
+});
+
+describe('armarZonasManuales', () => {
+  // 8 jugadores en 2 zonas: los ids son su posición de siembra.
+  const siembra8 = [1, 2, 3, 4, 5, 6, 7, 8];
+
+  it('ordena cada zona por siembra y le pone a cada jugador su posición', () => {
+    const resultado = armarZonasManuales(
+      [
+        { grupo: 'A', jugadorIds: [8, 1, 5, 4] },
+        { grupo: 'B', jugadorIds: [2, 7, 3, 6] },
+      ],
+      siembra8,
+      2,
+    );
+
+    expect(resultado).toEqual({
+      zonas: [
+        { grupo: 'A', integrantes: [1, 4, 5, 8].map((id) => ({ jugadorId: id, posicionSiembra: id })) },
+        { grupo: 'B', integrantes: [2, 3, 6, 7].map((id) => ({ jugadorId: id, posicionSiembra: id })) },
+      ],
+    });
+  });
+
+  it('la posición de siembra sale de la siembra, no del id', () => {
+    const resultado = armarZonasManuales(
+      [
+        { grupo: 'A', jugadorIds: [40, 10, 30] },
+        { grupo: 'B', jugadorIds: [20, 50, 60] },
+      ],
+      [60, 50, 40, 30, 20, 10],
+      2,
+    );
+
+    expect('zonas' in resultado && resultado.zonas[0].integrantes).toEqual([
+      { jugadorId: 40, posicionSiembra: 3 },
+      { jugadorId: 30, posicionSiembra: 4 },
+      { jugadorId: 10, posicionSiembra: 6 },
+    ]);
+  });
+
+  it('si falta un jugador, no coinciden', () => {
+    const resultado = armarZonasManuales(
+      [
+        { grupo: 'A', jugadorIds: [1, 2, 3, 4] },
+        { grupo: 'B', jugadorIds: [5, 6, 7] },
+      ],
+      siembra8,
+      2,
+    );
+
+    expect(resultado).toEqual({ error: 'JUGADORES_DISTINTOS' });
+  });
+
+  it('si un jugador está en dos zonas, no coinciden', () => {
+    const resultado = armarZonasManuales(
+      [
+        { grupo: 'A', jugadorIds: [1, 2, 3, 4] },
+        { grupo: 'B', jugadorIds: [4, 5, 6, 7] },
+      ],
+      siembra8,
+      2,
+    );
+
+    expect(resultado).toEqual({ error: 'JUGADORES_DISTINTOS' });
+  });
+
+  it('si hay alguien que no está en la siembra, no coinciden', () => {
+    const resultado = armarZonasManuales(
+      [
+        { grupo: 'A', jugadorIds: [1, 2, 3, 4] },
+        { grupo: 'B', jugadorIds: [5, 6, 7, 99] },
+      ],
+      siembra8,
+      2,
+    );
+
+    expect(resultado).toEqual({ error: 'JUGADORES_DISTINTOS' });
+  });
+
+  it('tienen que ser las zonas del formato, de la A en adelante', () => {
+    const tresZonas = [
+      { grupo: 'A', jugadorIds: [1, 2, 3] },
+      { grupo: 'B', jugadorIds: [4, 5, 6] },
+      { grupo: 'C', jugadorIds: [7, 8] },
+    ];
+    const salteada = [
+      { grupo: 'A', jugadorIds: [1, 2, 3, 4] },
+      { grupo: 'C', jugadorIds: [5, 6, 7, 8] },
+    ];
+
+    expect(armarZonasManuales(tresZonas, siembra8, 2)).toEqual({ error: 'ZONAS_INVALIDAS' });
+    expect(armarZonasManuales(salteada, siembra8, 2)).toEqual({ error: 'ZONAS_INVALIDAS' });
+  });
+
+  it('las zonas tienen el mismo tamaño que daría el sorteo', () => {
+    const despareja = [
+      { grupo: 'A', jugadorIds: [1, 2, 3, 4, 5] },
+      { grupo: 'B', jugadorIds: [6, 7, 8] },
+    ];
+
+    expect(armarZonasManuales(despareja, siembra8, 2)).toEqual({ error: 'ZONAS_INVALIDAS' });
+  });
+
+  it('con el cupo sin llenar, acepta zonas de 3 y de 4', () => {
+    // 7 jugadores en 2 zonas: una de 4 y una de 3.
+    const resultado = armarZonasManuales(
+      [
+        { grupo: 'A', jugadorIds: [1, 4, 5] },
+        { grupo: 'B', jugadorIds: [2, 3, 6, 7] },
+      ],
+      [1, 2, 3, 4, 5, 6, 7],
+      2,
+    );
+
+    expect('zonas' in resultado).toBe(true);
   });
 });

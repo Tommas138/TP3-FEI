@@ -127,7 +127,7 @@ Con las inscripciones cerradas, el sistema distribuirá a los jugadores en grupo
 - También puede cargar a mano el resultado de un sorteo hecho presencialmente, para circuitos que lo hacen como ceremonia.
 - Con treinta y dos jugadores en ocho grupos de cuatro se generan cuarenta y ocho partidos de zona.
 
-**Estado:** implementada con el sorteo automático y los tres modos de distribución. El sorteo queda como borrador hasta confirmarlo ([decisión 014](decisiones/014-borrador-del-sorteo.md)) y, si no se llena el cupo, se arman zonas de 3 ([decisión 015](decisiones/015-zonas-con-menos-inscriptos.md)). Sortear en pantalla y cargar a mano dependen de la decisión abierta 6.
+**Estado:** implementada con los tres modos de sorteo (automático; en pantalla, que revela de a un jugador para proyectarlo ([decisión 021](decisiones/021-sorteo-en-pantalla.md)); y la carga manual de un sorteo presencial, que se arrastra jugador por jugador ([decisión 020](decisiones/020-carga-manual-del-sorteo.md))) y los tres modos de distribución. El sorteo queda como borrador hasta confirmarlo ([decisión 014](decisiones/014-borrador-del-sorteo.md)) y, si no se llena el cupo, se arman zonas de 3 ([decisión 015](decisiones/015-zonas-con-menos-inscriptos.md)). Falta ordenar a mano la siembra de los torneos sin ranking.
 
 **Entrega: 50%**
 

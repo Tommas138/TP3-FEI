@@ -209,11 +209,15 @@ El sistema genera los grupos y los partidos de zona. La organización puede revi
 
 **Se sortea con la inscripción cerrada** (`inscripciones_cerradas`), y solo entran los inscriptos que pagaron. Cada categoría se sortea por separado: es un `Torneo` aparte, con su propio ranking.
 
-**El sorteo queda como borrador hasta confirmarlo** ([decisión 014](decisiones/014-borrador-del-sorteo.md)). Cambiar el modo de distribución reparte de nuevo con la misma siembra; "volver a sortear" vuelve a sortear también el orden entre los empatados en puntos. Al confirmar se generan los partidos de zona, con vencimiento en el último día de la fase de grupos del cronograma, y el torneo pasa a `zonas_generadas`. Confirmar no se deshace.
+**El sorteo lo pide la organización.** Hasta el primer sorteo la página muestra las zonas vacías, y elegir el reparto no sortea. Lo mismo al cambiar el reparto de un borrador: vuelven las zonas vacías hasta tocar «Sortear». Así cada resultado aparece cuando lo piden.
+
+**El sorteo queda como borrador hasta confirmarlo** ([decisión 014](decisiones/014-borrador-del-sorteo.md)). Sortear después de cambiar el modo de distribución reparte de nuevo con la misma siembra; "volver a sortear" vuelve a sortear también el orden entre los empatados en puntos. Al confirmar se generan los partidos de zona, con vencimiento en el último día de la fase de grupos del cronograma, y el torneo pasa a `zonas_generadas`. Confirmar no se deshace.
 
 **Si no se llenó el cupo**, se respeta la cantidad de zonas del formato y algunas quedan de 3. Con menos de 3 por zona no se puede sortear ([decisión 015](decisiones/015-zonas-con-menos-inscriptos.md)).
 
-Por ahora solo está el modo `automatico`; `asistido` y `manual` dependen de la decisión abierta 6.
+**En el modo `manual`** la organización arrastra a cada jugador a la zona que le tocó en el sorteo presencial ([decisión 020](decisiones/020-carga-manual-del-sorteo.md)). La API comprueba que estén todos los que pagaron, una sola vez, y que las zonas tengan los tamaños que daría el sorteo. La posición de siembra la calcula la API con el ranking, igual que en el automático. Al confirmar, lo cargado se guarda como borrador y se confirma en el mismo paso.
+
+**En el modo `asistido`** el sorteo se hace frente a todos ([decisión 021](decisiones/021-sorteo-en-pantalla.md)). La organización elige el reparto y toca "Sortear en pantalla": la API hace un sorteo nuevo, siembra incluida, y la web lo muestra en pantalla completa, de a un jugador y bombo por bombo. Mientras no se sorteó en pantalla, la página no muestra zonas. Al terminar se puede volver a sortear o volver a la página para revisar y confirmar.
 
 **Si hay cuadro consuelo** (parámetro del torneo), se reserva desde el sorteo la estructura de ambos cuadros.
 

@@ -7,6 +7,9 @@ import type { EstadoTorneo } from './torneo';
 export const modosDistribucion = ['serpentina', 'directa', 'bombos'] as const;
 export type ModoDistribucion = (typeof modosDistribucion)[number];
 
+export const modosSorteo = ['automatico', 'asistido', 'manual'] as const;
+export type ModoSorteo = (typeof modosSorteo)[number];
+
 // Lo que manda la web al sortear. El resultado queda guardado como borrador hasta que se
 // confirma (ver docs/decisiones/014-borrador-del-sorteo.md).
 export const sortearSchema = z.object({
@@ -14,13 +17,12 @@ export const sortearSchema = z.object({
   // true = "Volver a sortear": se vuelve a sortear también el orden entre los empatados en puntos.
   // false = solo cambia cómo se reparten: se reusa la siembra del borrador, si sigue sirviendo.
   nuevaSiembra: z.boolean().default(false),
+  // asistido: el mismo sorteo, que la web revela de a un jugador para proyectarlo (decisión 021).
+  modoSorteo: z.enum(['automatico', 'asistido']).default('automatico'),
 });
 
 export type DatosSortearEntrada = z.input<typeof sortearSchema>;
 export type DatosSortear = z.output<typeof sortearSchema>;
-
-export const modosSorteo = ['automatico', 'asistido', 'manual'] as const;
-export type ModoSorteo = (typeof modosSorteo)[number];
 
 // Lo que manda la web en el modo manual: el resultado de un sorteo hecho en persona, zona por
 // zona. La API comprueba que estén todos los inscriptos y que las zonas sean las del formato.

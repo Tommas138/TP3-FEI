@@ -215,7 +215,7 @@ El sistema genera los grupos y los partidos de zona. La organización puede revi
 
 **En el modo `manual`** la organización arrastra a cada jugador a la zona que le tocó en el sorteo presencial ([decisión 020](decisiones/020-carga-manual-del-sorteo.md)). La API comprueba que estén todos los que pagaron, una sola vez, y que las zonas tengan los tamaños que daría el sorteo. La posición de siembra la calcula la API con el ranking, igual que en el automático. Al confirmar, lo cargado se guarda como borrador y se confirma en el mismo paso.
 
-Falta el modo `asistido`.
+**En el modo `asistido`** el sorteo se hace frente a todos ([decisión 021](decisiones/021-sorteo-en-pantalla.md)). La organización elige el reparto y toca "Sortear en pantalla": la API hace un sorteo nuevo, siembra incluida, y la web lo muestra en pantalla completa, de a un jugador y bombo por bombo. Mientras no se sorteó en pantalla, la página no muestra zonas. Al terminar se puede volver a sortear o volver a la página para revisar y confirmar.
 
 **Si hay cuadro consuelo** (parámetro del torneo), se reserva desde el sorteo la estructura de ambos cuadros.
 

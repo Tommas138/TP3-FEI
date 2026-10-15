@@ -161,7 +161,8 @@ export async function sortear(slug: string, usuarioId: number, torneoId: number,
   const modo = datos.modoDistribucion.toUpperCase() as ModoPrisma;
   const zonas = distribuirEnZonas(siembra, torneo.cantidadGrupos, modo, Math.random);
 
-  await guardarBorrador(torneo, zonas, { modoDistribucion: modo, modoSorteo: ModoSorteoPrisma.AUTOMATICO });
+  const modoSorteo = datos.modoSorteo === 'asistido' ? ModoSorteoPrisma.ASISTIDO : ModoSorteoPrisma.AUTOMATICO;
+  await guardarBorrador(torneo, zonas, { modoDistribucion: modo, modoSorteo });
   return obtenerSorteo(slug, usuarioId, torneoId);
 }
 

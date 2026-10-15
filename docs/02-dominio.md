@@ -84,6 +84,10 @@ Nadie queda afuera. El reglamento garantiza un mínimo de 4 partidos por jugador
 
 Fuera de la fase de grupos **todo es eliminación directa**. Ambos cuadros funcionan igual y corren en paralelo; Complementaria tiene su propio campeón.
 
+**Dónde va cada uno en el cuadro.** El reglamento no lo define: es una decisión nuestra ([decisión 022](decisiones/022-ubicacion-en-el-cuadro.md)). Se arma una siembra única: primero todos los ganadores de zona, ordenados entre zonas con la cascada de §6; después los segundos, y así. Esa siembra se ubica como en cualquier cuadro con cabezas de serie: el 1 y el 2 solo pueden cruzarse en la final. Dentro de cada franja de siembra se aleja a los compañeros de zona: con dos clasificados por zona, quedan en mitades opuestas y solo se cruzan en la final.
+
+**Byes.** Si los clasificados no son potencia de 2 (6 zonas, zonas de 3 en el cuadro consuelo), sobran lugares, y los mejores sembrados pasan a la segunda ronda sin jugar. Ese partido no se crea ([decisión 023](decisiones/023-byes-sin-partido.md)): un cuadro de n jugadores tiene n − 1 partidos, haya byes o no.
+
 ### 3.3 Volumen de partidos
 
 Con 32 jugadores en 8 grupos de 4:

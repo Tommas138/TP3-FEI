@@ -117,6 +117,8 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~¿Qué pasa si el enfrentamiento directo no desempata?~~ **Define el ranking al inicio del torneo**, que es la posición de siembra ([decisión 017](decisiones/017-empates-que-el-enfrentamiento-directo-no-resuelve.md)). El enfrentamiento directo solo vale entre dos; con tres o más empatados, o si todavía no jugaron entre ellos, se usa el criterio que el reglamento ya tiene para el último desempate
 - ~~¿Cómo se compara entre zonas de 3 y de 4?~~ **Se descarta el partido contra el último de cada zona de 4** ([decisión 018](decisiones/018-comparar-zonas-de-distinto-tamano.md)). Así todos comparan la misma cantidad de partidos; es lo que hacen la FIFA y la UEFA con grupos desiguales
 - ~~¿Las posiciones de las zonas son públicas?~~ **Por ahora solo para quien administra; la consulta pública y Mi zona tendrán su propia ruta sobre el mismo cálculo** ([decisión 019](decisiones/019-acceso-a-las-posiciones.md)). Cada ruta se abre con la pantalla que la usa y el permiso que esa pantalla necesita
+- ~~¿Dónde va cada clasificado en el cuadro?~~ **Por una siembra única de clasificados**: los ganadores de zona primero, ordenados entre zonas con la cascada, y los compañeros de zona en mitades opuestas ([decisión 022](decisiones/022-ubicacion-en-el-cuadro.md)). Sirve para cualquier formato, con o sin byes, sin un patrón distinto para cada cantidad de zonas
+- ~~¿Un bye es un partido?~~ **No: quien tiene bye entra directo en la segunda ronda** ([decisión 023](decisiones/023-byes-sin-partido.md)). Así la base solo tiene partidos que se juegan, como con el W.O.
 - ~~¿Qué fecha llevan los puntos importados de la planilla?~~ **El 1° de enero del año del casillero** ([decisión 008](decisiones/008-fecha-de-los-movimientos-importados.md)). La planilla no tiene fechas y el ranking solo necesita que un torneo real de esa etapa y ese año le gane al importado
 
 ---
@@ -158,6 +160,8 @@ Lista para llevar a la próxima charla. Las respondidas se tachan.
     *Contexto: el reglamento habla del "ganador del partido entre ambos", que solo sirve entre dos. Hoy el sistema pone primero al mejor rankeado al inicio del torneo ([decisión 017](decisiones/017-empates-que-el-enfrentamiento-directo-no-resuelve.md)).*
 13. Si no se llena el cupo y quedan zonas de 3 y de 4, ¿cómo comparan a los de distintas zonas, por ejemplo para elegir un mejor tercero?
     *Contexto: en una zona de 4 se juega un partido más. Hoy el sistema descarta el partido contra el último de cada zona de 4 ([decisión 018](decisiones/018-comparar-zonas-de-distinto-tamano.md)).*
+14. ¿Cómo arman hoy los cruces de la primera ronda de Campeonato y Complementaria? ¿Hay un patrón fijo (1° de A contra 2° de B), se sortea, o lo decide el Comité?
+    *Contexto: el reglamento no lo dice. Hoy el sistema siembra a todos los clasificados (ganadores de zona primero) y separa a los de una misma zona hasta la final ([decisión 022](decisiones/022-ubicacion-en-el-cuadro.md)).*
 
 ### Resultados
 

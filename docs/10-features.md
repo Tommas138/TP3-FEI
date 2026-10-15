@@ -175,6 +175,8 @@ Al terminar la fase de grupos, el sistema armará automáticamente los cuadros e
 
 **Entrega: 50%**
 
+**Estado:** en curso. Está el armado de los cuadros como lógica pura, con tests (`apps/api/src/modules/competencia/cuadros.ts`): la siembra de los clasificados y su ubicación en el cuadro ([decisión 022](decisiones/022-ubicacion-en-el-cuadro.md)) y los byes, que no generan partido ([decisión 023](decisiones/023-byes-sin-partido.md)). Falta cerrar las zonas desde la API, guardar los cuadros y hacer avanzar al ganador.
+
 ---
 
 ## F09 — Consulta pública del ranking

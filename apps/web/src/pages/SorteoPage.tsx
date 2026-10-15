@@ -178,8 +178,6 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
   const error = sortear.error ?? cargar.error ?? confirmar.error;
   useSesionInvalida(error);
 
-  // Mientras se sortea se marca el modo pedido, no el que estaba.
-  const distribucion = sortear.isPending ? sortear.variables.modoDistribucion : sorteo.modoDistribucion;
   const { zonas } = sorteo;
 
   // Modo manual: las zonas como las va armando la organización, antes de guardarlas.
@@ -191,32 +189,28 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
   const zonaCorta = zonasManuales.find((z) => z.integrantes.length < minimoPorZona);
   const cargaCompleta = sinUbicar === 0 && zonaCorta === undefined;
 
-  // Antes del primer sorteo las zonas están vacías y el reparto elegido se usa recién al sortear.
-  const sinSortear = zonas === null;
+  // El reparto se elige y se aplica recién al tocar «Sortear». Mientras no haya borrador, o el
+  // elegido no sea el del borrador, se ven las zonas vacías.
   const [distribucionElegida, setDistribucionElegida] = useState<ModoDistribucion>(sorteo.modoDistribucion);
+  const repartoPendiente = zonas === null || distribucionElegida !== sorteo.modoDistribucion;
 
   // Modo en pantalla: las zonas no se muestran hasta que salieron en pantalla.
   const enPantalla = ejecutor === 'asistido' && !sorteo.confirmado;
   const sorteadoEnPantalla = sorteo.modoSorteo === 'asistido' && zonas !== null;
-  const reparteAlSortear = enPantalla || sinSortear;
   const [proyectando, setProyectando] = useState(false);
   // Cada sorteo en pantalla es una ronda nueva: la revelación arranca de cero.
   const [ronda, setRonda] = useState(0);
-  const zonasVisibles = enPantalla && !sorteadoEnPantalla ? null : zonas;
+  const zonasVisibles = repartoPendiente || (enPantalla && !sorteadoEnPantalla) ? null : zonas;
   const cerrarProyeccion = useCallback(() => setProyectando(false), []);
 
   const { mutate: pedirSorteo } = sortear;
 
-  // El primer sorteo lo pide la organización: hasta entonces se ven las zonas vacías.
-  function primerSorteo() {
+  // Sortea con el reparto elegido. Reusa la siembra del borrador si sigue sirviendo, así pasar de
+  // serpentina a directa y volver da las mismas zonas (decisión 014). «Volver a sortear» sortea
+  // de nuevo también el orden entre los empatados.
+  function repartir(nuevaSiembra: boolean) {
     confirmar.reset();
-    pedirSorteo({ modoDistribucion: distribucionElegida });
-  }
-
-  // Cambiar el modo reusa la siembra; volver a sortear también sortea de nuevo los empates.
-  function repartir(modoDistribucion: ModoDistribucion, nuevaSiembra: boolean) {
-    confirmar.reset();
-    pedirSorteo({ modoDistribucion, nuevaSiembra });
+    pedirSorteo({ modoDistribucion: distribucionElegida, nuevaSiembra });
   }
 
   // Sortea de nuevo, siembra incluida: lo que sale en pantalla no lo vio nadie antes.
@@ -281,15 +275,12 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
             titulo="Cómo se reparten"
             aclaracion={sorteo.usaRanking ? 'usa el ranking vigente' : 'sin ranking, la siembra es al azar'}
             opciones={distribuciones.map((d) => ({ ...d, deshabilitada: !sorteable || ocupado || cargandoAMano }))}
-            elegida={reparteAlSortear ? distribucionElegida : distribucion}
-            alElegir={(modo) => {
-              if (reparteAlSortear) setDistribucionElegida(modo);
-              else if (modo !== distribucion) repartir(modo, false);
-            }}
+            elegida={distribucionElegida}
+            alElegir={setDistribucionElegida}
             ayuda={
               ejecutor === 'manual'
                 ? 'Cargado a mano, el reparto es el del sorteo presencial.'
-                : ayudaDistribucion[reparteAlSortear ? distribucionElegida : distribucion]
+                : ayudaDistribucion[distribucionElegida]
             }
           />
           <TarjetaOpciones
@@ -378,12 +369,12 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
               </Boton>
             ) : (
               !cargandoAMano &&
-              (sinSortear ? (
-                <Boton variante="organizador" grande className="font-semibold" disabled={!sorteable || ocupado} onClick={primerSorteo}>
+              (repartoPendiente ? (
+                <Boton variante="organizador" grande className="font-semibold" disabled={!sorteable || ocupado} onClick={() => repartir(false)}>
                   {sortear.isPending ? 'Sorteando…' : 'Sortear'}
                 </Boton>
               ) : (
-                <Boton grande disabled={!sorteable || ocupado} onClick={() => repartir(distribucion, true)}>
+                <Boton grande disabled={!sorteable || ocupado} onClick={() => repartir(true)}>
                   Volver a sortear
                 </Boton>
               ))

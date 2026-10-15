@@ -6,7 +6,7 @@ import {
   type Sorteo,
   type ZonaSorteada,
 } from '@setpoint/shared';
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Boton } from '../components/Boton';
 import { EncabezadoOrganizador } from '../components/EncabezadoOrganizador';
@@ -17,7 +17,7 @@ import { useSesionInvalida } from '../features/auth/useSesionInvalida';
 import { CargaManual } from '../features/competencia/CargaManual';
 import { SorteoEnPantalla } from '../features/competencia/SorteoEnPantalla';
 import { TarjetaOpciones } from '../features/competencia/TarjetaOpciones';
-import { TarjetaZona } from '../features/competencia/TarjetaZona';
+import { TarjetaZona, TarjetaZonaVacia } from '../features/competencia/TarjetaZona';
 import { useCargarZonas, useConfirmarSorteo, useSorteo, useSortear } from '../features/competencia/useSorteo';
 import {
   asignacionDeLasZonas,
@@ -191,26 +191,27 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
   const zonaCorta = zonasManuales.find((z) => z.integrantes.length < minimoPorZona);
   const cargaCompleta = sinUbicar === 0 && zonaCorta === undefined;
 
-  // Modo en pantalla: el reparto elegido se usa recién al sortear frente a todos, y las zonas no se
-  // muestran hasta que salieron en pantalla.
+  // Antes del primer sorteo las zonas están vacías y el reparto elegido se usa recién al sortear.
+  const sinSortear = zonas === null;
+  const [distribucionElegida, setDistribucionElegida] = useState<ModoDistribucion>(sorteo.modoDistribucion);
+
+  // Modo en pantalla: las zonas no se muestran hasta que salieron en pantalla.
   const enPantalla = ejecutor === 'asistido' && !sorteo.confirmado;
   const sorteadoEnPantalla = sorteo.modoSorteo === 'asistido' && zonas !== null;
-  const [distribucionEnPantalla, setDistribucionEnPantalla] = useState<ModoDistribucion>(sorteo.modoDistribucion);
+  const reparteAlSortear = enPantalla || sinSortear;
   const [proyectando, setProyectando] = useState(false);
   // Cada sorteo en pantalla es una ronda nueva: la revelación arranca de cero.
   const [ronda, setRonda] = useState(0);
   const zonasVisibles = enPantalla && !sorteadoEnPantalla ? null : zonas;
   const cerrarProyeccion = useCallback(() => setProyectando(false), []);
 
-  // La primera vez que se abre con la inscripción cerrada se sortea solo, con el modo del torneo,
-  // para mostrar cómo quedarían. El resultado queda como borrador hasta confirmar.
   const { mutate: pedirSorteo } = sortear;
-  const yaSorteado = useRef(false);
-  useEffect(() => {
-    if (!sorteable || zonas !== null || yaSorteado.current) return;
-    yaSorteado.current = true;
-    pedirSorteo({ modoDistribucion: sorteo.modoDistribucion });
-  }, [sorteable, zonas, sorteo.modoDistribucion, pedirSorteo]);
+
+  // El primer sorteo lo pide la organización: hasta entonces se ven las zonas vacías.
+  function primerSorteo() {
+    confirmar.reset();
+    pedirSorteo({ modoDistribucion: distribucionElegida });
+  }
 
   // Cambiar el modo reusa la siembra; volver a sortear también sortea de nuevo los empates.
   function repartir(modoDistribucion: ModoDistribucion, nuevaSiembra: boolean) {
@@ -223,7 +224,7 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
     confirmar.reset();
     setRonda((r) => r + 1);
     setProyectando(true);
-    pedirSorteo({ modoDistribucion: distribucionEnPantalla, nuevaSiembra: true, modoSorteo: 'asistido' });
+    pedirSorteo({ modoDistribucion: distribucionElegida, nuevaSiembra: true, modoSorteo: 'asistido' });
   }
 
   function mover(jugadorId: number, grupo: string | null) {
@@ -280,15 +281,15 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
             titulo="Cómo se reparten"
             aclaracion={sorteo.usaRanking ? 'usa el ranking vigente' : 'sin ranking, la siembra es al azar'}
             opciones={distribuciones.map((d) => ({ ...d, deshabilitada: !sorteable || ocupado || cargandoAMano }))}
-            elegida={enPantalla ? distribucionEnPantalla : distribucion}
+            elegida={reparteAlSortear ? distribucionElegida : distribucion}
             alElegir={(modo) => {
-              if (enPantalla) setDistribucionEnPantalla(modo);
+              if (reparteAlSortear) setDistribucionElegida(modo);
               else if (modo !== distribucion) repartir(modo, false);
             }}
             ayuda={
               ejecutor === 'manual'
                 ? 'Cargado a mano, el reparto es el del sorteo presencial.'
-                : ayudaDistribucion[enPantalla ? distribucionEnPantalla : distribucion]
+                : ayudaDistribucion[reparteAlSortear ? distribucionElegida : distribucion]
             }
           />
           <TarjetaOpciones
@@ -309,25 +310,34 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
 
           {cargandoAMano && sorteable ? (
             <CargaManual jugadores={sorteo.jugadores} zonas={zonasManuales} capacidad={mayor} alMover={mover} />
-          ) : enPantalla && sorteable && !sorteadoEnPantalla ? (
-            <p className="text-[15px] text-gris-500">
-              Proyectá esta pantalla y tocá «Sortear en pantalla». Los jugadores salen de a uno, bombo por bombo.
-            </p>
+          ) : sorteable && zonasVisibles === null ? (
+            <>
+              <p className="text-[15px] text-gris-500">
+                {enPantalla
+                  ? 'Proyectá esta pantalla y tocá «Sortear en pantalla». Los jugadores salen de a uno, bombo por bombo.'
+                  : 'Elegí cómo se reparten y tocá «Sortear».'}
+              </p>
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                {letrasDeZonas(sorteo.cantidadGrupos).map((grupo) => (
+                  <TarjetaZonaVacia key={grupo} grupo={grupo} lugares={mayor} sorteando={sortear.isPending} />
+                ))}
+              </div>
+            </>
           ) : zonasVisibles ? (
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               {zonasVisibles.map((zona) => (
                 <TarjetaZona key={zona.grupo} zona={zona} />
               ))}
             </div>
-          ) : sorteo.estado === 'borrador' || sorteo.estado === 'publicado' ? (
-            <p className="text-[15px] text-gris-500">La inscripción sigue abierta. El sorteo se hace cuando cierre.</p>
           ) : (
-            !error && <p className="text-[15px] text-gris-500">Sorteando…</p>
+            (sorteo.estado === 'borrador' || sorteo.estado === 'publicado') && (
+              <p className="text-[15px] text-gris-500">La inscripción sigue abierta. El sorteo se hace cuando cierre.</p>
+            )
           )}
 
           {error && <p className="text-sm text-rojo-texto">{textoDeError(error, sorteo)}</p>}
 
-          {(zonasVisibles || cargandoAMano) && (
+          {(zonasVisibles || (cargandoAMano && sorteo.jugadores.some((j) => j.posicionSiembra !== null))) && (
             <p className="text-sm text-gris-500">El número es la posición de siembra, según el ranking al momento del sorteo.</p>
           )}
         </section>
@@ -367,11 +377,16 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
                 {sorteadoEnPantalla ? 'Volver a sortear en pantalla' : 'Sortear en pantalla'}
               </Boton>
             ) : (
-              !cargandoAMano && (
+              !cargandoAMano &&
+              (sinSortear ? (
+                <Boton variante="organizador" grande className="font-semibold" disabled={!sorteable || ocupado} onClick={primerSorteo}>
+                  {sortear.isPending ? 'Sorteando…' : 'Sortear'}
+                </Boton>
+              ) : (
                 <Boton grande disabled={!sorteable || ocupado} onClick={() => repartir(distribucion, true)}>
                   Volver a sortear
                 </Boton>
-              )
+              ))
             )}
             <Boton
               variante="principal"

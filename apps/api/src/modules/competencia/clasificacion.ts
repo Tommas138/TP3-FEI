@@ -40,6 +40,12 @@ export function tieneResultado(partido: PartidoDeLaTabla) {
   return ESTADOS_CON_RESULTADO.includes(partido.estado) && partido.ganadorId !== null;
 }
 
+// Los partidos con uno reemplazado por su resultado nuevo, sin tocar los originales. En la
+// fase de grupos cada par de jugadores se cruza una sola vez, así que el par identifica al partido.
+export function conElResultado<P extends PartidoDeLaTabla>(partidos: P[], nuevo: P): P[] {
+  return partidos.map((p) => (p.jugadorAId === nuevo.jugadorAId && p.jugadorBId === nuevo.jugadorBId ? nuevo : p));
+}
+
 // El W.O. se computa 6-0 6-0 a favor del rival (02-dominio.md §8.5). No se guardan sets:
 // se arman acá a partir del estado y del ganador (decisión 016). El abandono cuenta igual:
 // sus sets son lo que se jugó, no lo que se computa (decisión 027).

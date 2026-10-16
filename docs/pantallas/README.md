@@ -55,7 +55,7 @@ Desde la devolución del 25% ([../devolucion-25.md](../devolucion-25.md)) la int
 | [Tu circuito](organizador/tu-circuito.html) | "Etapas del calendario", "Cada etapa es un casillero", "Etapas por año" | Sección de ranking y resumen | Actualizado (`SeccionRanking`, `ResumenCircuito`, mensaje de repetidos en `packages/shared`) |
 | [Nuevo torneo](organizador/nuevo-torneo.html) | "Etapa del calendario", "Cuadro Complementaria", "Clasifican a Campeonato" | Datos básicos, formato y panel *Cómo queda* | Actualizado (`SeccionBasico`, `SeccionFormato`, `PanelComoQueda`), salvo "Campeonato": decisión abierta 16 |
 | [Importar padrón](organizador/importar-padron.html) | "una columna por etapa", "ETAPA INVIERNO 26" | Ayuda de la subida y encabezado de ejemplo de la planilla (este es un dato del archivo, puede quedar) | Actualizado (`FormularioSubida`, `EstadoProcesando`, error `SIN_ETAPAS` de la API) |
-| [Cargar resultado](organizador/cargar-resultado.html) | "va a Complementaria" | Vista previa de la tabla | Sin implementar |
+| [Cargar resultado](organizador/cargar-resultado.html) | "va a Complementaria" | Vista previa de la tabla | Actualizado (`vistaPreviaDeLaZona()` en `features/resultados/resultado.ts`) |
 | [Tablero del torneo](organizador/tablero.html) | "Complementaria" | Explicación de la línea de corte | Sin implementar |
 | [Cerrar el torneo](organizador/cierre.html) | "complementaria" | Rótulo de cuadro | Sin implementar |
 | [Los dos cuadros](publico/cuadros.html) | "Complementaria" | Título del segundo cuadro y bajada | Sin implementar |

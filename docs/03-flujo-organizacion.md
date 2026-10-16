@@ -281,10 +281,12 @@ Al guardar:
 
 | Endpoint | Qué hace |
 |---|---|
-| `GET /api/organizaciones/:slug/torneos/:id/partidos/:partidoId` | El partido con su resultado y el sistema de juego del torneo |
+| `GET /api/organizaciones/:slug/torneos/:id/partidos` | Los partidos del torneo, para elegir cuál cargar: zona o cuadro y ronda, jugadores, estado y ganador, sin los sets ([decisión 031](decisiones/031-como-se-llega-a-cargar-resultado.md)) |
+| `GET /api/organizaciones/:slug/torneos/:id/partidos/:partidoId` | El partido con su resultado y el sistema de juego del torneo. Si es de cuadro, también cuántas rondas tiene el cuadro |
 | `PUT /api/organizaciones/:slug/torneos/:id/partidos/:partidoId/resultado` | Guarda o corrige el resultado: `{ tipo: 'jugado', sets }`, `{ tipo: 'walkover', ganadorId }` o `{ tipo: 'abandono', ganadorId, sets }` |
+| `POST /api/organizaciones/:slug/torneos/:id/partidos/:partidoId/simulacion` | Con el mismo body que el `PUT`, cómo quedaría la tabla de la zona sin guardar nada, y si con las zonas cerradas la corrección cambiaría los cuadros. Rechaza lo mismo que el `PUT`. En un partido de cuadro devuelve la zona en `null` ([decisión 032](decisiones/032-vista-previa-del-resultado.md)) |
 
-Los dos son solo para quien administra la organización. Los errores de validación responden `400 DATOS_INVALIDOS` con un mensaje por set. Los que no dependen de los datos responden 409: `PARTIDO_SIN_JUGADORES` (un partido de cuadro que espera al ganador del anterior), `CORRECCION_CAMBIA_LOS_CUADROS`, `SIGUIENTE_YA_JUGADO`, `TORNEO_TERMINADO`, y `RESULTADO_DESACTUALIZADO` si otra carga del mismo partido llegó antes.
+Todos son solo para quien administra la organización. Los errores de validación responden `400 DATOS_INVALIDOS` con un mensaje por set. Los que no dependen de los datos responden 409: `PARTIDO_SIN_JUGADORES` (un partido de cuadro que espera al ganador del anterior), `CORRECCION_CAMBIA_LOS_CUADROS`, `SIGUIENTE_YA_JUGADO`, `TORNEO_TERMINADO`, y `RESULTADO_DESACTUALIZADO` si otra carga del mismo partido llegó antes.
 
 ---
 

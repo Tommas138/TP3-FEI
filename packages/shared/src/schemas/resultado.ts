@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { ClaveCuadro, EstadoPartido } from './cuadros';
+import type { ZonaDePosiciones } from './posiciones';
 
 // Carga de resultados (F06). La organización manda los sets; el ganador lo calcula la API.
 // Las reglas del sistema de juego están en 02-dominio.md §5 y sus parámetros, en el torneo
@@ -202,6 +203,8 @@ export type PartidoConResultado = {
   grupo: string | null; // solo en fase de grupos
   cuadro: ClaveCuadro | null; // solo en eliminatorias
   ronda: number | null;
+  // Rondas del cuadro: la última es la final. null en la fase de grupos.
+  rondas: number | null;
   // null en un partido de cuadro hasta que llega el ganador del anterior.
   jugadorA: JugadorDelPartido | null;
   jugadorB: JugadorDelPartido | null;
@@ -210,4 +213,33 @@ export type PartidoConResultado = {
   // Un W.O. no tiene sets. En un abandono, el último puede haber quedado sin terminar.
   sets: SetCargado[];
   sistema: SistemaDeJuego;
+};
+
+// Un partido en la lista para elegir cuál cargar: lo justo para ubicarlo y saber si falta su
+// resultado (decisión 031).
+export type PartidoDeLaLista = Pick<
+  PartidoConResultado,
+  'id' | 'fase' | 'grupo' | 'cuadro' | 'ronda' | 'jugadorA' | 'jugadorB' | 'estado' | 'ganadorId'
+>;
+
+// Los partidos de un torneo: primero los de las zonas, de la A en adelante; después los de
+// los cuadros, ronda por ronda.
+export type PartidosDelTorneo = {
+  torneoId: number;
+  // "Primavera 2026 · Tercera"
+  nombre: string;
+  partidos: PartidoDeLaLista[];
+};
+
+// La zona como quedaría con el resultado, y cuántos de sus partidos seguirían sin resultado.
+export type ZonaSimulada = ZonaDePosiciones & { partidosSinResultado: number };
+
+// Lo que pasaría al guardar un resultado, sin guardarlo: la vista previa de la carga (decisión 032).
+export type SimulacionDeResultado = {
+  // null en un partido de cuadro: esa vista previa la arma la web.
+  zona: ZonaSimulada | null;
+  zonasCerradas: boolean;
+  // Con las zonas cerradas, si el resultado cambia la siembra de los cuadros ya armados. Si la
+  // cambia, no se puede guardar (decisión 028).
+  cambiaLosCuadros: boolean;
 };

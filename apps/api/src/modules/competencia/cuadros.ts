@@ -1,6 +1,6 @@
 // Cuadros eliminatorios (02-dominio.md §3.2).
 // Lógica pura: recibe las zonas terminadas, devuelve los partidos de cada cuadro. No toca la base.
-import { compararEntreZonas, tieneResultado, type ZonaConPartidos } from './clasificacion';
+import { compararEntreZonas, conElResultado, tieneResultado, type ZonaConPartidos } from './clasificacion';
 import type { InscriptoEnZona, PartidoEnZona } from './posiciones';
 
 export type Clasificado = { jugadorId: number; grupo: string; posicionEnZona: number };
@@ -67,21 +67,15 @@ export function siembrasDeLosCuadros(inscriptos: InscriptoEnZona[], partidos: Pa
 }
 
 // Con las zonas cerradas, un resultado de zona se corrige solo si los cuadros que se armaron
-// siguen siendo los mismos: la misma siembra en los dos (decisión 028). En la fase de grupos
-// cada par de jugadores se cruza una sola vez, así que el par identifica al partido.
+// siguen siendo los mismos: la misma siembra en los dos (decisión 028).
 export function correccionCambiaLosCuadros(
   inscriptos: InscriptoEnZona[],
   partidos: PartidoEnZona[],
   formato: FormatoDeCuadros,
   corregido: PartidoEnZona,
 ) {
-  const esElCorregido = (p: PartidoEnZona) => p.jugadorAId === corregido.jugadorAId && p.jugadorBId === corregido.jugadorBId;
   const antes = siembrasDeLosCuadros(inscriptos, partidos, formato);
-  const despues = siembrasDeLosCuadros(
-    inscriptos,
-    partidos.map((p) => (esElCorregido(p) ? corregido : p)),
-    formato,
-  );
+  const despues = siembrasDeLosCuadros(inscriptos, conElResultado(partidos, corregido), formato);
   const ids = (siembra: Clasificado[]) => siembra.map((c) => c.jugadorId).join(',');
   return ids(antes.campeonato) !== ids(despues.campeonato) || ids(antes.complementaria) !== ids(despues.complementaria);
 }

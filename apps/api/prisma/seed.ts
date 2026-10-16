@@ -32,8 +32,12 @@ import {
   EstadoInscripcion,
   MedioPago,
   EstadoPago,
+  EstadoPartido,
+  FasePartido,
 } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { ganadorDeLosSets, resultadoDelTorneoSchema, type DatosResultadoEntrada } from '@setpoint/shared';
+import { distribuirEnZonas, generarPartidosDeZona, ordenarSiembra, type Azar } from '../src/modules/competencia/sorteo';
 
 const prisma = new PrismaClient();
 
@@ -271,6 +275,8 @@ async function main() {
     },
   });
 
+  await crearCopaDelLimay(org.id, tercera.id);
+
   // --- verificación ---
   // Suma simple: vale porque en el seed hay un solo movimiento por etapa.
   // El ranking real toma, por cada etapa, el movimiento más reciente.
@@ -305,6 +311,129 @@ async function main() {
 
   console.log(`Cuentas de organizador (contraseña "${CONTRASENA_ORGANIZADOR}"):`);
   console.log('  organizador@polenta.example · organizador@valle.example\n');
+}
+
+// Generador determinista (mulberry32), con el contrato de Math.random: así el sorteo del seed
+// sale siempre igual.
+function azarConSemilla(semilla: number): Azar {
+  let estado = semilla;
+  return () => {
+    estado = (estado + 0x6d2b79f5) | 0;
+    let t = Math.imul(estado ^ (estado >>> 15), 1 | estado);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Resultados de zona del seed, del lado del mejor sembrado de cada partido. Se repiten en orden;
+// los que dicen `vuelta` los gana el peor sembrado.
+const RESULTADOS_DE_ZONA: (DatosResultadoEntrada & { vuelta?: boolean })[] = [
+  { tipo: 'jugado', sets: [{ gamesA: 6, gamesB: 3 }, { gamesA: 6, gamesB: 4 }] },
+  { tipo: 'jugado', sets: [{ gamesA: 6, gamesB: 4 }, { gamesA: 3, gamesB: 6 }, { gamesA: 10, gamesB: 7, esSuperTieBreak: true }] },
+  { tipo: 'jugado', sets: [{ gamesA: 7, gamesB: 6, tieBreakA: 7, tieBreakB: 4 }, { gamesA: 6, gamesB: 2 }] },
+  { tipo: 'jugado', vuelta: true, sets: [{ gamesA: 6, gamesB: 4 }, { gamesA: 6, gamesB: 7 }, { gamesA: 10, gamesB: 8, esSuperTieBreak: true }] },
+  { tipo: 'jugado', sets: [{ gamesA: 6, gamesB: 1 }, { gamesA: 6, gamesB: 2 }] },
+  { tipo: 'jugado', vuelta: true, sets: [{ gamesA: 7, gamesB: 5 }, { gamesA: 6, gamesB: 3 }] },
+];
+
+// El sistema de juego de POLENTA, que es el valor por defecto de Torneo.
+const SISTEMA_POLENTA = { setsPorPartido: 3, terceroSet: 'super_tiebreak', gamesPorSet: 6, puntosTieBreak: 7, puntosSuperTieBreak: 10 } as const;
+
+// --- un torneo con las zonas en juego y casi todos los resultados cargados (F06, F07, F08) ---
+// Para probar la carga de resultados sin pasar por el sorteo: faltan 3 partidos, uno en cada
+// zona salvo la A. Cargándolos se pueden cerrar las zonas y seguir con los cuadros. Suelto, para
+// no tocar el ranking, pero sembrado con él. Hay un W.O. y un abandono entre los cargados.
+async function crearCopaDelLimay(organizacionId: number, categoriaId: number) {
+  const jugadores = await prisma.jugador.findMany({
+    where: { organizacionId, categoriaId },
+    orderBy: { id: 'asc' },
+    skip: 10,
+    take: 16,
+    include: { movimientos: true },
+  });
+  const azar = azarConSemilla(26);
+  // Suma simple, como en la verificación: en el seed hay un solo movimiento por etapa.
+  const puntos = jugadores.map((j) => ({ jugadorId: j.id, puntos: j.movimientos.reduce((suma, m) => suma + m.puntos, 0) }));
+  const zonas = distribuirEnZonas(ordenarSiembra(puntos, azar), 4, 'SERPENTINA', azar);
+  const zonaDe = new Map(zonas.flatMap((z) => z.integrantes.map((i) => [i.jugadorId, { grupo: z.grupo, ...i }])));
+
+  const torneo = await prisma.torneo.create({
+    data: {
+      organizacionId,
+      categoriaId,
+      etapaId: null,
+      nombre: 'Copa del Limay 2026',
+      edicion: 'Copa del Limay 2026',
+      estado: EstadoTorneo.GRUPOS_EN_CURSO,
+      sorteoConfirmado: true,
+      cupo: 16,
+      precio: 45000,
+      modoInscripcion: ModoInscripcion.CERRADA,
+      cantidadGrupos: 4,
+      cierreInscripcion: diasAtras(14),
+      fechaInicio: diasAtras(10),
+      inscripciones: {
+        create: jugadores.map((j) => ({
+          jugadorId: j.id,
+          estado: EstadoInscripcion.PAGADA,
+          grupo: zonaDe.get(j.id)!.grupo,
+          posicionSiembra: zonaDe.get(j.id)!.posicionSiembra,
+          pago: { create: { medio: MedioPago.TRANSFERENCIA, estado: EstadoPago.APROBADO, monto: 45000 } },
+        })),
+      },
+    },
+  });
+
+  // En cada zona, el último partido queda sin jugar. La A se completa.
+  const partidos = generarPartidosDeZona(zonas);
+  const pendientes = new Set(['B', 'C', 'D'].map((grupo) => partidos.map((p) => p.grupo).lastIndexOf(grupo)));
+  // Uno de los cargados es un W.O. y otro, un abandono.
+  const walkover = partidos.findIndex((p) => p.grupo === 'B');
+  const abandono = partidos.findIndex((p) => p.grupo === 'C');
+
+  const base = { torneoId: torneo.id, fase: FasePartido.GRUPOS, fechaLimite: diasAdelante(11) };
+  for (const [i, { grupo, jugadorAId, jugadorBId }] of partidos.entries()) {
+    if (pendientes.has(i)) {
+      await prisma.partido.create({ data: { ...base, grupo, jugadorAId, jugadorBId } });
+      continue;
+    }
+
+    const { vuelta, ...modelo } = RESULTADOS_DE_ZONA[i % RESULTADOS_DE_ZONA.length];
+    const datos: DatosResultadoEntrada =
+      i === walkover
+        ? { tipo: 'walkover', ganadorId: jugadorAId }
+        : i === abandono
+          ? { tipo: 'abandono', ganadorId: jugadorBId, sets: [{ gamesA: 6, gamesB: 4 }, { gamesA: 2, gamesB: 1 }] }
+          : modelo;
+    // Si el seed no respeta el sistema de juego, que falle acá y no en la pantalla.
+    const resultado = resultadoDelTorneoSchema(SISTEMA_POLENTA).parse(datos);
+    const sets =
+      resultado.tipo === 'walkover'
+        ? []
+        : resultado.sets.map((set) =>
+            vuelta ? { ...set, gamesA: set.gamesB, gamesB: set.gamesA, tieBreakA: set.tieBreakB, tieBreakB: set.tieBreakA } : set,
+          );
+    const ganadorId =
+      resultado.tipo === 'jugado' ? (ganadorDeLosSets(sets) === 'A' ? jugadorAId : jugadorBId) : resultado.ganadorId;
+    const estado = { jugado: EstadoPartido.JUGADA, walkover: EstadoPartido.WALKOVER, abandono: EstadoPartido.ABANDONO }[
+      resultado.tipo
+    ];
+
+    await prisma.partido.create({
+      data: {
+        ...base,
+        grupo,
+        jugadorAId,
+        jugadorBId,
+        ganadorId,
+        estado,
+        sets: { create: sets.map((set, n) => ({ numero: n + 1, ...set })) },
+      },
+    });
+  }
+
+  console.log(`Zonas en juego en /torneos/${torneo.id} (Copa del Limay · Tercera): faltan ${pendientes.size} partidos de zona
+`);
 }
 
 // Segunda organización, con la configuración opuesta a POLENTA: sin ranking (sin

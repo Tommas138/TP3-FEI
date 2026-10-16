@@ -234,6 +234,7 @@ Escribir `apps/api/prisma/seed.ts` con datos realistas:
 - 26 jugadores de Tercera con sus puntos reales por etapa, como movimientos de ranking
 - 1 torneo en estado `PUBLICADO`
 - 1 torneo suelto en `PUBLICADO` con el cupo lleno (24 inscripciones pagadas), para recorrer Inscripciones → cerrar → sortear (F13 en su versión mínima y F05)
+- 1 torneo suelto en `GRUPOS_EN_CURSO`, **Copa del Limay 2026**, con 16 jugadores en 4 zonas y 21 de los 24 resultados de zona cargados, entre ellos un W.O. y un abandono. Las zonas salen de las funciones reales del sorteo y cada resultado se valida con el schema de `packages/shared`. Falta un partido en cada zona salvo la A: sirve para probar la carga de resultados (F06), la tabla (F07), el cierre de las zonas y los cuadros (F08) sin sortear antes
 
 Y una segunda organización ficticia, **Liga Amateur del Valle** ([devolucion-25.md](devolucion-25.md), cambio A4), con la configuración opuesta:
 

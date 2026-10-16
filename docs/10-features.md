@@ -175,7 +175,7 @@ Al terminar la fase de grupos, el sistema armará automáticamente los cuadros e
 
 **Entrega: 50%**
 
-**Estado:** en curso. Está el armado de los cuadros como lógica pura, con tests (`apps/api/src/modules/competencia/cuadros.ts`): la siembra de los clasificados y su ubicación en el cuadro ([decisión 022](decisiones/022-ubicacion-en-el-cuadro.md)) y los byes, que no generan partido ([decisión 023](decisiones/023-byes-sin-partido.md)). Falta cerrar las zonas desde la API, guardar los cuadros y hacer avanzar al ganador.
+**Estado:** implementada en la API. La organización cierra las zonas (`POST .../torneos/:id/cuadros`) y en ese momento se arman los dos cuadros completos ([decisión 026](decisiones/026-cierre-de-zonas.md)). Dónde va cada uno sale de una siembra única de los clasificados ([decisión 022](decisiones/022-ubicacion-en-el-cuadro.md)), y los byes no generan partido ([decisión 023](decisiones/023-byes-sin-partido.md)). `GET .../torneos/:id/cuadros` los devuelve, por ahora solo a la organización ([decisión 019](decisiones/019-acceso-a-las-posiciones.md)). El avance del ganador está en `avanzarGanador()`, que tiene que llamar la carga de resultados (F06), todavía sin implementar. Faltan la pantalla *Los dos cuadros* (con F10) y el nombre configurable del cuadro consuelo.
 
 ---
 

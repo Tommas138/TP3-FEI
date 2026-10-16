@@ -232,7 +232,7 @@ El sistema genera los grupos y los partidos de zona. La organización puede revi
 
 **En el modo `asistido`** el sorteo se hace frente a todos ([decisión 021](decisiones/021-sorteo-en-pantalla.md)). La organización elige el reparto y toca "Sortear en pantalla": la API hace un sorteo nuevo, siembra incluida, y la web lo muestra en pantalla completa, de a un jugador y bombo por bombo. Mientras no se sorteó en pantalla, la página no muestra zonas. Al terminar se puede volver a sortear o volver a la página para revisar y confirmar.
 
-**Si hay cuadro consuelo** (parámetro del torneo), se reserva desde el sorteo la estructura de ambos cuadros.
+**El sorteo no reserva los cuadros.** Se arman recién al cerrar las zonas (§11), con o sin cuadro consuelo según el parámetro del torneo ([decisión 026](decisiones/026-cierre-de-zonas.md)).
 
 ---
 
@@ -266,14 +266,16 @@ Al guardar:
 
 ## 11. Cierre de fase de grupos
 
-Al completarse las zonas, el sistema:
+**Las zonas las cierra la organización**, cuando todos los partidos tienen resultado ([decisión 026](decisiones/026-cierre-de-zonas.md)). Los cancelados no frenan el cierre; los vencidos sí, porque antes hay que resolverlos. Al cerrar, el sistema:
 
 1. Ordena cada grupo con la cascada de desempates
 2. Manda los N primeros de cada grupo al cuadro **principal** (N configurable; en POLENTA, 2, y lo llaman Campeonato)
 3. **Si el torneo tiene cuadro consuelo**, manda al resto a ese segundo cuadro
-4. Genera los cuadros correspondientes
+4. Genera los cuadros completos: dónde va cada uno sale de una siembra única de los clasificados ([decisión 022](decisiones/022-ubicacion-en-el-cuadro.md)), y quien tiene bye ya queda en la segunda ronda ([decisión 023](decisiones/023-byes-sin-partido.md))
 
-Cuando hay dos cuadros, corren en paralelo con el mismo plazo por ronda.
+El torneo pasa a `eliminatorias`. Cerrar no se deshace.
+
+Cuando hay dos cuadros, corren en paralelo con el mismo plazo por ronda, contado desde el día del cierre (en POLENTA, la primera ronda vence a los 7 días y la segunda a los 14). Cada resultado de cuadro hace avanzar al ganador al partido siguiente.
 
 ---
 

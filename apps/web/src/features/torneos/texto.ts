@@ -11,6 +11,14 @@ export function diaCorto(dia: string) {
   return `${numero} ${MESES[mes - 1]}`;
 }
 
+const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+
+// '2026-10-23' -> 'viernes 23'. En UTC, para que el día de la semana no se corra por zona horaria.
+export function diaConSemana(dia: string) {
+  const [anio, mes, numero] = dia.split('-').map(Number);
+  return `${DIAS[new Date(Date.UTC(anio, mes - 1, numero)).getUTCDay()]} ${numero}`;
+}
+
 export function rangoDeDias(desde: string, hasta: string) {
   return `${diaCorto(desde)} al ${diaCorto(hasta)}`;
 }

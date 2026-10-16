@@ -249,6 +249,8 @@ La organización podrá seguir el estado de las inscripciones de cada torneo en 
 - Ante una baja, el sistema deja registrada la cancelación y si corresponde devolución, pero **el movimiento de dinero lo realiza la organización por fuera del sistema**. La política de reembolsos es del circuito, no de la plataforma.
 - Muestra la conciliación del torneo: cuánto se recaudó, cuánto corresponde a la organización y qué devoluciones quedaron pendientes.
 
+**Estado:** parcial. Hay una versión mínima, que es el camino al sorteo (F05): la pantalla Inscripciones de cada categoría muestra los lugares (pagados, reservando y libres) y la lista de inscriptos con su estado, y permite cerrar la inscripción. Al cerrar, las reservas sin pagar no se tocan y no entran al sorteo ([decisión 024](decisiones/024-reservas-sin-pagar-al-cerrar.md)), y no se puede cerrar si los que pagaron no alcanzan para las zonas ([decisión 025](decisiones/025-no-se-cierra-sin-inscriptos-para-las-zonas.md)). Falta inscribir a mano, dar de baja, recordar el pago, la lista de espera y la conciliación.
+
 **Entrega: 75%**
 
 ---

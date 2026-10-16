@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import { Catalogo } from './Catalogo';
 import { ImportarPadronPage } from './pages/ImportarPadronPage';
 import { IngresoPage } from './pages/IngresoPage';
+import { InscripcionesPage } from './pages/InscripcionesPage';
 import { InicioPage } from './pages/InicioPage';
 import { LandingPage } from './pages/LandingPage';
 import { NuevoTorneoPage } from './pages/NuevoTorneoPage';
@@ -27,6 +28,9 @@ export default function App() {
       <Route path="/padron/importar" element={<ImportarPadronPage />} />
       {/* /torneos/nuevo entra por acá con id "nuevo": es la misma pantalla antes del primer guardado. */}
       <Route path="/torneos/:id" element={<NuevoTorneoPage />} />
+      {/* Desde acá, el :id es el de un torneo (una categoría), no el de la convocatoria como
+          en Nuevo torneo: cada categoría se cierra y se sortea aparte (decisión 003). */}
+      <Route path="/torneos/:id/inscripciones" element={<InscripcionesPage />} />
       <Route path="/torneos/:id/sorteo" element={<SorteoPage />} />
     </Routes>
   );

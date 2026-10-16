@@ -39,7 +39,7 @@ borrador → publicado → inscripciones_cerradas → zonas_generadas
 |---|---|---|
 | `borrador` | Se crea el torneo | Editar todo. No visible |
 | `publicado` | La organización lo publica | Inscripciones abiertas. Se sigue editando, salvo las categorías |
-| `inscripciones_cerradas` | Se llena el cupo o vence la fecha | Revisar padrón, resolver lista de espera |
+| `inscripciones_cerradas` | La organización cierra la inscripción de la categoría (§7). Hoy no se cierra sola al llenarse el cupo ni al vencer la fecha | Sortear las zonas. Con F13 completa, además, resolver la lista de espera |
 | `zonas_generadas` | Se ejecuta el sorteo | Comunicar grupos y plazos |
 | `grupos_en_curso` | Arranca el plazo de 3 semanas | Cargar resultados de zona |
 | `eliminatorias` | Cierran todas las zonas | El cuadro principal y, si hay, el consuelo en juego, con el plazo por ronda del torneo. En la interfaz: "cuadros" |
@@ -179,7 +179,7 @@ El formulario replica la convocatoria que hoy publican en WhatsApp ([02](02-domi
 
 **Publicar.** El borrador se puede guardar incompleto, pero para publicarlo tienen que estar la fecha de cierre de inscripción, que no puede ser pasada, y la fecha de inicio. Publicar pasa a `publicado` todos los torneos de la convocatoria a la vez.
 
-**Editar con la inscripción abierta.** Mientras el torneo está publicado se puede seguir ajustando todo menos las categorías: cada una ya puede tener inscripciones, y en borrador cambiarlas implica borrar y recrear torneos ([decisión 003](decisiones/003-torneo-con-varias-categorias.md)). El cupo de una categoría no puede bajar de la cantidad de inscriptos que ocupan lugar (pendientes de pago y pagados; la lista de espera no cuenta). Cuando se cierra la inscripción, el formato ya no cambia: el sorteo lo usa.
+**Editar con la inscripción abierta.** Mientras el torneo está publicado se puede seguir ajustando todo menos las categorías: cada una ya puede tener inscripciones, y en borrador cambiarlas implica borrar y recrear torneos ([decisión 003](decisiones/003-torneo-con-varias-categorias.md)). El cupo de una categoría no puede bajar de la cantidad de inscriptos que ocupan lugar (pendientes de pago y pagados; la lista de espera no cuenta). Cuando se cierra la inscripción, el formato ya no cambia: el sorteo lo usa. Como el formato es uno solo para toda la convocatoria, alcanza con que una categoría cierre para que la convocatoria entera deje de editarse, aunque otra siga abierta.
 
 ---
 
@@ -196,6 +196,13 @@ Funciones:
 
 La lista de espera se ordena **por orden de llegada** y cubre deserciones, replicando la regla actual del reglamento.
 
+**Lo que existe hoy** es una versión mínima, que es el camino al sorteo. La pantalla Inscripciones es de una categoría (`/torneos/:id/inscripciones`, con el id del `Torneo`, no el de la convocatoria): muestra los lugares del cupo (pagados, reservando y libres) y la lista de inscriptos con su estado. Con la inscripción abierta, el botón es "Cerrar inscripciones": el torneo pasa a `inscripciones_cerradas` y el botón pasa a "Sortear zonas", que lleva al sorteo. Cada categoría se cierra aparte, y cerrar no se deshace.
+
+- **Las reservas sin pagar no se tocan al cerrar** ([decisión 024](decisiones/024-reservas-sin-pagar-al-cerrar.md)): no entran al sorteo, que toma solo las pagadas, y se resuelven cuando exista F13 completa. La pantalla lo avisa antes de cerrar.
+- **No se puede cerrar si los que pagaron no alcanzan para las zonas**, al menos 3 por zona ([decisión 025](decisiones/025-no-se-cierra-sin-inscriptos-para-las-zonas.md)). La pantalla dice cuántos hacen falta y enlaza al torneo para bajar la cantidad de zonas.
+
+Inscribir a mano, dar de baja, recordar el pago, la lista de espera y la conciliación todavía no están.
+
 ---
 
 ## 8. Sorteo y generación de zonas
@@ -207,7 +214,7 @@ Dos parámetros independientes ([07-configurabilidad.md](07-configurabilidad.md)
 
 El sistema genera los grupos y los partidos de zona. La organización puede revisar antes de confirmar.
 
-**Se sortea con la inscripción cerrada** (`inscripciones_cerradas`), y solo entran los inscriptos que pagaron. Cada categoría se sortea por separado: es un `Torneo` aparte, con su propio ranking.
+**Se sortea con la inscripción cerrada** (`inscripciones_cerradas`), y solo entran los inscriptos que pagaron. Se llega desde la pantalla Inscripciones de la categoría, con "Sortear zonas" (§7). Cada categoría se sortea por separado: es un `Torneo` aparte, con su propio ranking.
 
 **El sorteo lo pide la organización.** Hasta el primer sorteo la página muestra las zonas vacías, y elegir el reparto no sortea. Lo mismo al cambiar el reparto de un borrador: vuelven las zonas vacías hasta tocar «Sortear». Así cada resultado aparece cuando lo piden.
 

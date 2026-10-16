@@ -233,7 +233,7 @@ Escribir `apps/api/prisma/seed.ts` con datos realistas:
 - La tabla de puntos: 100 / 75 / 50 / 25 / 15 / 10
 - 26 jugadores de Tercera con sus puntos reales por etapa, como movimientos de ranking
 - 1 torneo en estado `PUBLICADO`
-- 1 torneo suelto en `INSCRIPCIONES_CERRADAS` con 24 inscripciones pagadas, para probar el sorteo (F05) mientras no exista el cierre de inscripción (F13)
+- 1 torneo suelto en `PUBLICADO` con el cupo lleno (24 inscripciones pagadas), para recorrer Inscripciones → cerrar → sortear (F13 en su versión mínima y F05)
 
 Y una segunda organización ficticia, **Liga Amateur del Valle** ([devolucion-25.md](devolucion-25.md), cambio A4), con la configuración opuesta:
 

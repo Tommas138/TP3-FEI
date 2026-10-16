@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { PartidoDeLaTabla, ZonaConPartidos } from '../../src/modules/competencia/clasificacion';
+import type { EstadoPartido, PartidoDeLaTabla, ZonaConPartidos } from '../../src/modules/competencia/clasificacion';
 import {
+  agruparZonas,
   armarCuadro,
+  fechaLimiteDeRonda,
   lugarSiguiente,
   ordenDeSiembra,
+  partidoSiguiente,
+  partidosSinResultado,
   puestosPorCuadro,
   siembraDelCuadro,
   type Clasificado,
@@ -208,6 +212,71 @@ describe('armarCuadro', () => {
   it('con menos de dos jugadores no hay cuadro', () => {
     expect(armarCuadro(clasificados(1))).toEqual([]);
     expect(armarCuadro([])).toEqual([]);
+  });
+});
+
+describe('agruparZonas', () => {
+  it('arma una zona por grupo, de la A en adelante, con sus integrantes y sus partidos', () => {
+    const inscriptos = [
+      { jugadorId: 21, grupo: 'B', posicionSiembra: 2, nombre: 'N', apellido: 'A' },
+      { jugadorId: 11, grupo: 'A', posicionSiembra: 1, nombre: 'N', apellido: 'B' },
+      { jugadorId: 12, grupo: 'A', posicionSiembra: 3, nombre: 'N', apellido: 'C' },
+    ];
+    const partido = { grupo: 'A', jugadorAId: 11, jugadorBId: 12, ganadorId: null, estado: 'ANOTADA' as const, sets: [] };
+
+    expect(agruparZonas(inscriptos, [partido])).toEqual([
+      { grupo: 'A', integrantes: [{ jugadorId: 11, posicionSiembra: 1 }, { jugadorId: 12, posicionSiembra: 3 }], partidos: [partido] },
+      { grupo: 'B', integrantes: [{ jugadorId: 21, posicionSiembra: 2 }], partidos: [] },
+    ]);
+  });
+});
+
+describe('partidosSinResultado', () => {
+  const partido = (estado: EstadoPartido, ganadorId: number | null = null) => ({
+    grupo: 'A',
+    jugadorAId: 1,
+    jugadorBId: 2,
+    ganadorId,
+    estado,
+    sets: [],
+  });
+
+  it('cuenta los jugados y los W.O. como terminados, y no frena por un partido cancelado', () => {
+    expect(partidosSinResultado([partido('JUGADA', 1), partido('WALKOVER', 2), partido('CANCELADA')])).toBe(0);
+  });
+
+  it('frena por los pendientes y por los vencidos, que los resuelve la organización', () => {
+    expect(partidosSinResultado([partido('JUGADA', 1), partido('CONFIRMADA'), partido('VENCIDA')])).toBe(2);
+  });
+});
+
+describe('partidoSiguiente', () => {
+  it('enlaza cada partido de un cuadro de 16 con uno que existe, y la final con ninguno', () => {
+    const partidos = armarCuadro(clasificados(16));
+    const existe = (r: number, o: number) => partidos.some((p) => p.ronda === r && p.ordenEnRonda === o);
+
+    for (const p of partidos) {
+      const siguiente = partidoSiguiente(p, 4);
+      if (p.ronda === 4) expect(siguiente).toBeNull();
+      else expect(existe(siguiente!.ronda, siguiente!.ordenEnRonda)).toBe(true);
+    }
+  });
+
+  it('el ganador del partido con bye entra del lado libre del partido siguiente', () => {
+    // Con 5 jugadores, el 1 tiene bye y espera en el partido 1 de la ronda 2 al ganador de 4 contra 5.
+    const partidos = armarCuadro(clasificados(5));
+    const primeraRonda = deLaRonda(partidos, 1)[0];
+
+    expect(partidoSiguiente(primeraRonda, 3)).toEqual({ ronda: 2, ordenEnRonda: 1, lado: 'B' });
+  });
+});
+
+describe('fechaLimiteDeRonda', () => {
+  it('suma el plazo por cada ronda, en días UTC', () => {
+    const cierre = new Date('2026-10-16T22:30:00.000Z');
+
+    expect(fechaLimiteDeRonda(cierre, 7, 1).toISOString()).toBe('2026-10-23T00:00:00.000Z');
+    expect(fechaLimiteDeRonda(cierre, 7, 4).toISOString()).toBe('2026-11-13T00:00:00.000Z');
   });
 });
 

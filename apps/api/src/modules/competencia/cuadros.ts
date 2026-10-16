@@ -1,6 +1,7 @@
 // Cuadros eliminatorios (02-dominio.md §3.2).
 // Lógica pura: recibe las zonas terminadas, devuelve los partidos de cada cuadro. No toca la base.
-import { compararEntreZonas, type ZonaConPartidos } from './clasificacion';
+import { compararEntreZonas, tieneResultado, type ZonaConPartidos } from './clasificacion';
+import type { InscriptoEnZona, PartidoEnZona } from './posiciones';
 
 export type Clasificado = { jugadorId: number; grupo: string; posicionEnZona: number };
 
@@ -13,6 +14,23 @@ export type PartidoDeCuadro = {
 
 const desdeHasta = (desde: number, hasta: number) =>
   Array.from({ length: Math.max(0, hasta - desde + 1) }, (_, i) => desde + i);
+
+// Las zonas como las compara la cascada, a partir de lo que se lee para las posiciones.
+export function agruparZonas(inscriptos: InscriptoEnZona[], partidos: PartidoEnZona[]): ZonaConPartidos[] {
+  return [...new Set(inscriptos.map((i) => i.grupo))].sort().map((grupo) => ({
+    grupo,
+    integrantes: inscriptos
+      .filter((i) => i.grupo === grupo)
+      .map(({ jugadorId, posicionSiembra }) => ({ jugadorId, posicionSiembra })),
+    partidos: partidos.filter((p) => p.grupo === grupo),
+  }));
+}
+
+// Las zonas terminaron cuando cada partido tiene resultado: jugado o W.O. Un partido cancelado
+// no se juega y no las frena. Los vencidos sí: los resuelve la organización (02-dominio.md §8.4).
+export function partidosSinResultado(partidos: PartidoEnZona[]) {
+  return partidos.filter((p) => p.estado !== 'CANCELADA' && !tieneResultado(p)).length;
+}
 
 // Qué puestos de cada zona van a cada cuadro. Sin cuadro consuelo, los que no clasifican
 // quedan afuera.
@@ -100,6 +118,21 @@ export function ubicarEnElCuadro(siembra: Clasificado[]): (Clasificado | null)[]
 // como jugador A si k es impar y como B si es par.
 export function lugarSiguiente(ordenEnRonda: number) {
   return { ordenEnRonda: Math.ceil(ordenEnRonda / 2), lado: ordenEnRonda % 2 === 1 ? 'A' : 'B' } as const;
+}
+
+// El partido al que avanza el ganador. null en la final.
+export function partidoSiguiente(partido: PartidoDeCuadro, rondas: number) {
+  if (partido.ronda === rondas) return null;
+  return { ronda: partido.ronda + 1, ...lugarSiguiente(partido.ordenEnRonda) };
+}
+
+// Cada ronda tiene el plazo del torneo, contado desde que se cierran las zonas: la ronda 1 vence
+// a los plazoPorRondaDias y la 2 al doble. Los dos cuadros corren en paralelo con las mismas
+// fechas. Se cuenta en días UTC, igual que el cronograma de la convocatoria.
+export function fechaLimiteDeRonda(cierre: Date, plazoPorRondaDias: number, ronda: number) {
+  return new Date(
+    Date.UTC(cierre.getUTCFullYear(), cierre.getUTCMonth(), cierre.getUTCDate() + plazoPorRondaDias * ronda),
+  );
 }
 
 // Todos los partidos del cuadro, de la primera ronda a la final. Los de las rondas siguientes

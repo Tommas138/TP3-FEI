@@ -8,6 +8,7 @@ import { ListaBorradores } from './ListaBorradores';
 import { ResumenOrganizacion } from './ResumenOrganizacion';
 import { TablaTerminados } from './TablaTerminados';
 import { TarjetaInscripcionAbierta } from './TarjetaInscripcionAbierta';
+import { TarjetaParaSortear } from './TarjetaParaSortear';
 import { TarjetaTorneoEnJuego } from './TarjetaTorneoEnJuego';
 import type { TorneosDeInicio } from './torneosEjemplo';
 
@@ -20,10 +21,10 @@ function Grupo({ titulo, children }: { titulo: string; children: ReactNode }) {
   );
 }
 
-// Con torneos: agrupados por momento (en juego, con inscripción abierta, en borrador, terminados),
-// y a la derecha lo que pide atención.
+// Con torneos: agrupados por momento (en juego, para sortear, con inscripción abierta, en borrador,
+// terminados), y a la derecha lo que pide atención.
 export function InicioConTorneos({ torneos }: { torneos: TorneosDeInicio }) {
-  const { borradores, enJuego, conInscripcionAbierta, terminados, totalTerminados, avisos } = torneos;
+  const { borradores, enJuego, conInscripcionAbierta, paraSortear, terminados, totalTerminados, avisos } = torneos;
   const navegar = useNavigate();
 
   return (
@@ -34,6 +35,12 @@ export function InicioConTorneos({ torneos }: { torneos: TorneosDeInicio }) {
           <p className="text-[15px] text-gris-500">
             <Numero>{enJuego.length}</Numero> en juego · <Numero>{conInscripcionAbierta.length}</Numero> con la inscripción
             abierta
+            {paraSortear.length > 0 && (
+              <>
+                {' '}
+                · <Numero>{paraSortear.length}</Numero> para sortear
+              </>
+            )}
             {borradores.length > 0 && (
               <>
                 {' '}
@@ -55,6 +62,17 @@ export function InicioConTorneos({ torneos }: { torneos: TorneosDeInicio }) {
               {enJuego.map((torneo) => (
                 <TarjetaTorneoEnJuego key={torneo.id} torneo={torneo} />
               ))}
+            </Grupo>
+          )}
+
+          {/* Fuera de «Necesita tu atención»: ese bloque es rojo, y el rojo solo significa vencimiento. */}
+          {paraSortear.length > 0 && (
+            <Grupo titulo="Para sortear">
+              <div className="grid gap-3.5 md:grid-cols-2">
+                {paraSortear.map((torneo) => (
+                  <TarjetaParaSortear key={torneo.id} torneo={torneo} />
+                ))}
+              </div>
             </Grupo>
           )}
 

@@ -125,16 +125,26 @@ export type Convocatoria = DatosConvocatoria & {
   torneos: { id: number; categoria: string }[];
 };
 
+// Una categoría de la convocatoria en el listado. `id` es el del torneo: el que va en la URL de
+// Inscripciones y del sorteo. Cada categoría cierra la inscripción por separado, así que el
+// estado puede no ser el mismo que el de las demás.
+export type ResumenTorneo = {
+  id: number;
+  categoria: string;
+  estado: EstadoTorneo;
+  cupo: number;
+  // Los que ya pagaron.
+  inscriptos: number;
+};
+
 // Una fila del listado de torneos de la organización: una por convocatoria, no por categoría.
 export type ResumenConvocatoria = {
   id: number;
   nombre: string;
+  // El del primer torneo: borrador y publicado son de toda la convocatoria a la vez.
   estado: EstadoTorneo;
-  categorias: string[];
+  torneos: ResumenTorneo[];
   cierreInscripcion: string | null;
   fechaInicio: string | null;
   precio: number;
-  // Sumados entre las categorías de la convocatoria. Inscriptos = los que ya pagaron.
-  cupo: number;
-  inscriptos: number;
 };

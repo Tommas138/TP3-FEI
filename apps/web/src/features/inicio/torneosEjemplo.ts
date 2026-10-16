@@ -19,7 +19,17 @@ export type TorneoEnJuego = {
   partidosVencidos: number;
 };
 
+// Una categoría con la inscripción abierta. `id` es el del torneo, no el de la convocatoria.
 export type TorneoConInscripcionAbierta = {
+  id: number;
+  nombre: string;
+  detalle: string;
+  pagaron: number;
+  cupo: number;
+};
+
+// Una categoría con la inscripción cerrada que todavía no se sorteó.
+export type TorneoParaSortear = {
   id: number;
   nombre: string;
   detalle: string;
@@ -43,6 +53,7 @@ export type TorneosDeInicio = {
   borradores: TorneoEnBorrador[];
   enJuego: TorneoEnJuego[];
   conInscripcionAbierta: TorneoConInscripcionAbierta[];
+  paraSortear: TorneoParaSortear[];
   terminados: TorneoTerminado[];
   // La tabla muestra solo los últimos; este es el total.
   totalTerminados: number;
@@ -70,6 +81,7 @@ export const torneosEjemplo: TorneosDeInicio = {
     { id: 2, nombre: 'Primavera 26 · Tercera', detalle: 'Cierra el viernes 9 · sorteo el sábado 10', pagaron: 24, cupo: 32 },
     { id: 3, nombre: 'Primavera 26 · Segunda', detalle: 'Cierra el viernes 23 · sorteo el sábado 24', pagaron: 9, cupo: 32 },
   ],
+  paraSortear: [],
   terminados: [
     { id: 4, nombre: 'Invierno 26 · Tercera', termino: '05/09/2026', campeon: 'Lucas Ferreyra', jugadores: 32 },
     { id: 5, nombre: 'Otoño 26 · Segunda', termino: '27/06/2026', campeon: 'Nicolás Arrieta', jugadores: 32 },

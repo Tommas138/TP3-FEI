@@ -13,6 +13,7 @@ export const estadosPartido = [
   'jugada',
   'vencida',
   'walkover',
+  'abandono',
   'cancelada',
 ] as const;
 export type EstadoPartido = (typeof estadosPartido)[number];
@@ -30,7 +31,8 @@ export type PartidoDelCuadro = {
   estado: EstadoPartido;
   // 'AAAA-MM-DD'
   fechaLimite: string | null;
-  // En un super tie-break, gamesA y gamesB son los puntos. Un W.O. no tiene sets (decisión 016).
+  // En un super tie-break, gamesA y gamesB son los puntos. Un W.O. no tiene sets (decisión 016);
+  // en un abandono, el último puede haber quedado sin terminar (decisión 027).
   sets: { gamesA: number; gamesB: number; esSuperTieBreak: boolean }[];
 };
 

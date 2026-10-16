@@ -138,6 +138,8 @@ enum EstadoPartido {
   JUGADA
   VENCIDA
   WALKOVER
+  // Se jugó hasta que uno abandonó: guarda los sets jugados y cuenta como un W.O. (decisión 027)
+  ABANDONO
   CANCELADA
 }
 

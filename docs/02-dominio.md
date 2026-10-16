@@ -158,6 +158,7 @@ Estas reglas afectan directamente al modelo de datos del partido.
 - Un `Set` puede ser un set normal o un super tie-break. Hay que distinguirlos con un flag.
 - Para el cómputo de desempates: **el super tie-break cuenta como 1 set y además como 1 game**. El tie-break cuenta como 1 game.
 - Los partidos tienen **2 o 3 sets**, nunca más.
+- Como el tie-break es sin diferencia, termina **7-6 como máximo**; el super tie-break, **10-9**. Los puntos del tie-break se guardan si se conocen, pero no son obligatorios: no cambian ningún desempate ([decisión 030](decisiones/030-puntos-del-tie-break-opcionales.md)).
 
 ---
 
@@ -298,6 +299,8 @@ En la práctica actual se flexibiliza: agregan días o acomodan la fecha.
 ### 8.5 Cómputo del W.O.
 
 **6-0 6-0 a favor del rival.** Esto resuelve limpiamente el impacto en los criterios de desempate por sets y games.
+
+**Abandono.** Si un jugador abandona un partido empezado, se computa igual que un W.O.: 6-0 6-0 a favor del que siguió. Se guarda el marcador hasta el abandono, pero no cuenta para los desempates. El reglamento no lo define: es una decisión nuestra ([decisión 027](decisiones/027-abandono.md)).
 
 ---
 

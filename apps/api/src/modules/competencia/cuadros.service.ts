@@ -1,17 +1,15 @@
-import { Cuadro, EstadoTorneo, FasePartido, type Prisma } from '@prisma/client';
+import { Cuadro, EstadoPartido as EstadoPrisma, EstadoTorneo, FasePartido, type Prisma } from '@prisma/client';
 import type { ClaveCuadro, Cuadros, EstadoPartido } from '@setpoint/shared';
 import { organizacionAdministrada } from '../../lib/permisos';
 import { prisma } from '../../lib/prisma';
 import { ErrorHttp } from '../../middleware/errores';
 import {
-  agruparZonas,
   armarCuadro,
   fechaLimiteDeRonda,
   lugarSiguiente,
   partidoSiguiente,
   partidosSinResultado,
-  puestosPorCuadro,
-  siembraDelCuadro,
+  siembrasDeLosCuadros,
   type PartidoDeCuadro,
 } from './cuadros';
 import { INCLUIR_ZONAS, inscriptosYPartidos } from './posiciones.service';
@@ -76,12 +74,7 @@ export async function cerrarZonas(slug: string, usuarioId: number, torneoId: num
   const { inscriptos, partidos } = inscriptosYPartidos(torneo);
   if (partidosSinResultado(partidos) > 0) throw new ErrorHttp(409, 'ZONAS_INCOMPLETAS');
 
-  const zonas = agruparZonas(inscriptos, partidos);
-  const puestos = puestosPorCuadro(
-    torneo.clasificanPorGrupo,
-    torneo.tieneComplementaria,
-    Math.max(...zonas.map((z) => z.integrantes.length)),
-  );
+  const siembras = siembrasDeLosCuadros(inscriptos, partidos, torneo);
   const datos = { torneoId: torneo.id, cierre: new Date(), plazoPorRondaDias: torneo.plazoPorRondaDias };
 
   await prisma.$transaction(async (tx) => {
@@ -92,20 +85,20 @@ export async function cerrarZonas(slug: string, usuarioId: number, torneoId: num
     });
     if (count === 0) throw new ErrorHttp(409, 'ZONAS_NO_CERRABLES');
 
-    await crearCuadro(tx, { ...datos, cuadro: Cuadro.CAMPEONATO }, armarCuadro(siembraDelCuadro(zonas, puestos.campeonato)));
-    await crearCuadro(
-      tx,
-      { ...datos, cuadro: Cuadro.COMPLEMENTARIA },
-      armarCuadro(siembraDelCuadro(zonas, puestos.complementaria)),
-    );
+    await crearCuadro(tx, { ...datos, cuadro: Cuadro.CAMPEONATO }, armarCuadro(siembras.campeonato));
+    await crearCuadro(tx, { ...datos, cuadro: Cuadro.COMPLEMENTARIA }, armarCuadro(siembras.complementaria));
   });
 
   return obtenerCuadros(slug, usuarioId, torneoId);
 }
 
+const CON_RESULTADO = [EstadoPrisma.JUGADA, EstadoPrisma.WALKOVER, EstadoPrisma.ABANDONO];
+
 // Hace avanzar al ganador al partido siguiente de su cuadro. La llama la carga de resultados
-// (F06) en la misma transacción en que guarda el resultado. Si se corrige el resultado antes de
-// que se juegue el partido siguiente, vuelve a llamarla y el nuevo ganador pisa al anterior.
+// (F06) en la misma transacción en que guarda el resultado. Si una corrección cambia el ganador
+// antes de que se juegue el partido siguiente, vuelve a llamarla y el nuevo ganador pisa al
+// anterior. Si el siguiente ya tiene resultado, no se puede: se jugó con el ganador anterior
+// (decisión 028).
 export async function avanzarGanador(tx: Prisma.TransactionClient, partidoId: number) {
   const partido = await tx.partido.findUniqueOrThrow({
     where: { id: partidoId },
@@ -115,10 +108,12 @@ export async function avanzarGanador(tx: Prisma.TransactionClient, partidoId: nu
   if (partido.fase !== FasePartido.ELIMINATORIA || partido.siguientePartidoId === null || partido.ganadorId === null) return;
 
   const { lado } = lugarSiguiente(partido.ordenEnRonda!);
-  await tx.partido.update({
-    where: { id: partido.siguientePartidoId },
+  // Con el estado como condición, no pisa un resultado que se cargó mientras tanto.
+  const { count } = await tx.partido.updateMany({
+    where: { id: partido.siguientePartidoId, estado: { notIn: CON_RESULTADO } },
     data: lado === 'A' ? { jugadorAId: partido.ganadorId } : { jugadorBId: partido.ganadorId },
   });
+  if (count === 0) throw new ErrorHttp(409, 'SIGUIENTE_YA_JUGADO');
 }
 
 const jugadorDelCuadro = { select: { id: true, nombre: true, apellido: true } } as const;

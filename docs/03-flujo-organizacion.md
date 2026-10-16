@@ -253,14 +253,38 @@ Reemplaza el trabajo actual de revisar el grupo de WhatsApp a mano.
 
 **La carga es responsabilidad de la organización.** Los jugadores no cargan resultados ([04-flujo-jugador.md](04-flujo-jugador.md) §2).
 
-Por partido: sets, games, tie-breaks y ganador, validado contra el sistema de juego configurado en el torneo ([07-configurabilidad.md](07-configurabilidad.md) §2.2).
+Por partido: los sets y, si se conocen, los puntos del tie-break de un 7-6 ([decisión 030](decisiones/030-puntos-del-tie-break-opcionales.md)). Se valida contra el sistema de juego configurado en el torneo ([07-configurabilidad.md](07-configurabilidad.md) §2.2): cómo termina un set, que el super tie-break sea el set decisivo y que no sobren ni falten sets. **El ganador lo calcula el sistema a partir de los sets**; la organización solo lo indica en un W.O. o un abandono.
+
+Hay tres tipos de resultado:
+
+| Tipo | Qué se carga | Para la tabla |
+|---|---|---|
+| Jugado | Los sets | Los sets |
+| Walkover | Quién ganó. No se guardan sets ([decisión 016](decisiones/016-walkover-sin-sets-guardados.md)) | 6-0 6-0 a favor del ganador |
+| Abandono | Quién ganó y lo que se jugó; el último set puede haber quedado sin terminar | 6-0 6-0 a favor del ganador, como el W.O. ([decisión 027](decisiones/027-abandono.md)) |
 
 Al guardar:
 
-- Se recalcula la tabla de posiciones de la zona con la cascada de desempates
-- Si era de cuadro, el ganador avanza a la siguiente ronda del cuadro que corresponda
+- La tabla de posiciones de la zona ya se ve actualizada: se calcula en cada consulta con la cascada de desempates
+- Si era de cuadro, el ganador avanza a la siguiente ronda del cuadro que corresponda, en la misma transacción
 
-**Partidos no jugados en plazo:** no se resuelven con regla automática. El sistema presenta el caso con el historial de coordinación y la organización decide W.O., doble W.O. o extensión. El W.O. se registra como **6-0 6-0**.
+**Corrección.** Se carga el resultado otra vez y reemplaza al anterior. Se puede siempre que no cambie lo que ya se armó con él ([decisión 028](decisiones/028-correccion-de-resultados.md)):
+
+- Con las zonas abiertas, siempre.
+- Con las zonas cerradas, solo si los cuadros quedan con la misma siembra.
+- En un cuadro, si cambia el ganador, solo si el partido siguiente todavía no se jugó: el nuevo ganador reemplaza al anterior.
+- Con el torneo finalizado, nunca.
+
+**Partidos no jugados en plazo:** no se resuelven con regla automática. El sistema presenta el caso con el historial de coordinación y la organización decide W.O., doble W.O. o extensión. El W.O. se registra como **6-0 6-0**. El doble W.O. todavía no se puede cargar.
+
+### API de la carga de resultados
+
+| Endpoint | Qué hace |
+|---|---|
+| `GET /api/organizaciones/:slug/torneos/:id/partidos/:partidoId` | El partido con su resultado y el sistema de juego del torneo |
+| `PUT /api/organizaciones/:slug/torneos/:id/partidos/:partidoId/resultado` | Guarda o corrige el resultado: `{ tipo: 'jugado', sets }`, `{ tipo: 'walkover', ganadorId }` o `{ tipo: 'abandono', ganadorId, sets }` |
+
+Los dos son solo para quien administra la organización. Los errores de validación responden `400 DATOS_INVALIDOS` con un mensaje por set. Los que no dependen de los datos responden 409: `PARTIDO_SIN_JUGADORES` (un partido de cuadro que espera al ganador del anterior), `CORRECCION_CAMBIA_LOS_CUADROS`, `SIGUIENTE_YA_JUGADO`, `TORNEO_TERMINADO`, y `RESULTADO_DESACTUALIZADO` si otra carga del mismo partido llegó antes.
 
 ---
 

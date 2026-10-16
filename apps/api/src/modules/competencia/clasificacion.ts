@@ -9,6 +9,7 @@ export type EstadoPartido =
   | 'JUGADA'
   | 'VENCIDA'
   | 'WALKOVER'
+  | 'ABANDONO'
   | 'CANCELADA';
 
 // Un set como lo guarda SetPartido. En un super tie-break, gamesA y gamesB son los puntos.
@@ -32,15 +33,18 @@ export type Estadisticas = {
   gamesPerdidos: number;
 };
 
+const ESTADOS_CON_RESULTADO: EstadoPartido[] = ['JUGADA', 'WALKOVER', 'ABANDONO'];
+
 // Solo suman los partidos con resultado. Un W.O. tiene ganador aunque no tenga sets.
 export function tieneResultado(partido: PartidoDeLaTabla) {
-  return (partido.estado === 'JUGADA' || partido.estado === 'WALKOVER') && partido.ganadorId !== null;
+  return ESTADOS_CON_RESULTADO.includes(partido.estado) && partido.ganadorId !== null;
 }
 
 // El W.O. se computa 6-0 6-0 a favor del rival (02-dominio.md §8.5). No se guardan sets:
-// se arman acá a partir del estado y del ganador (decisión 016).
+// se arman acá a partir del estado y del ganador (decisión 016). El abandono cuenta igual:
+// sus sets son lo que se jugó, no lo que se computa (decisión 027).
 function setsDelResultado(partido: PartidoDeLaTabla): SetDelPartido[] {
-  if (partido.estado !== 'WALKOVER') return partido.sets;
+  if (partido.estado !== 'WALKOVER' && partido.estado !== 'ABANDONO') return partido.sets;
   const ganaA = partido.ganadorId === partido.jugadorAId;
   const set = { gamesA: ganaA ? 6 : 0, gamesB: ganaA ? 0 : 6, esSuperTieBreak: false };
   return [set, set];

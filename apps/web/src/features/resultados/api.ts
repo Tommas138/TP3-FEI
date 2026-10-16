@@ -1,4 +1,4 @@
-import type { DatosResultado, PartidoConResultado, PartidosDelTorneo } from '@setpoint/shared';
+import type { DatosResultado, PartidoConResultado, PartidosDelTorneo, SimulacionDeResultado } from '@setpoint/shared';
 import { pedir } from '../../lib/api';
 
 // El id es el de un torneo (una categoría): cada categoría tiene sus zonas y sus cuadros.
@@ -15,4 +15,9 @@ export function obtenerPartido(slug: string, id: number, partidoId: number) {
 // Cargar y corregir es lo mismo: el resultado nuevo reemplaza al que haya (decisión 028).
 export function guardarResultado(slug: string, id: number, partidoId: number, datos: DatosResultado) {
   return pedir<PartidoConResultado>('PUT', `${ruta(slug, id)}/${partidoId}/resultado`, datos);
+}
+
+// Cómo quedaría la zona con ese resultado, sin guardarlo (decisión 032).
+export function simularResultado(slug: string, id: number, partidoId: number, datos: DatosResultado) {
+  return pedir<SimulacionDeResultado>('POST', `${ruta(slug, id)}/${partidoId}/simulacion`, datos);
 }

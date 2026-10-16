@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   compararEntreZonas,
+  conElResultado,
   estadisticasDeZona,
   tablaDeZona,
   type EstadoPartido,
@@ -322,5 +323,24 @@ describe('compararEntreZonas', () => {
 
     expect(cuartos).toHaveLength(1);
     expect(cuartos[0]).toMatchObject({ grupo: 'A', jugadorId: 4, partidosJugados: 3, posicion: 1, desempateConElSiguiente: null });
+  });
+});
+
+describe('conElResultado', () => {
+  const partidos = [jugado(1, 2, '6-4 6-4'), sinJugar(1, 3, 'PENDIENTE_COORDINACION'), jugado(2, 3, '6-0 6-0')];
+
+  it('reemplaza el partido del mismo par de jugadores y deja los demás', () => {
+    const nuevo = jugado(1, 3, '6-2 6-2');
+    expect(conElResultado(partidos, nuevo)).toEqual([partidos[0], nuevo, partidos[2]]);
+  });
+
+  it('corrige un resultado que ya estaba cargado', () => {
+    const corregido = jugado(1, 2, '4-6 4-6');
+    expect(conElResultado(partidos, corregido)[0]).toBe(corregido);
+  });
+
+  it('no toca la lista original', () => {
+    conElResultado(partidos, jugado(1, 3, '6-2 6-2'));
+    expect(partidos[1].estado).toBe('PENDIENTE_COORDINACION');
   });
 });

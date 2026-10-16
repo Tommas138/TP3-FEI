@@ -8,6 +8,7 @@ import {
   type PartidoConResultado,
   type PartidoDeLaLista,
   type PartidosDelTorneo,
+  type SimulacionDeResultado,
   type SistemaDeJuego,
 } from '@setpoint/shared';
 import { organizacionAdministrada } from '../../lib/permisos';
@@ -16,6 +17,7 @@ import { ErrorHttp } from '../../middleware/errores';
 import { camposConError } from '../../middleware/validar';
 import { correccionCambiaLosCuadros } from './cuadros';
 import { avanzarGanador } from './cuadros.service';
+import { simularZona } from './posiciones';
 import { INCLUIR_ZONAS, inscriptosYPartidos } from './posiciones.service';
 
 // Carga y corrección de resultados (F06). Los carga la organización (03-flujo-organizacion.md §10).
@@ -168,14 +170,60 @@ function ganadorDelResultado(resultado: DatosResultado, jugadorAId: number, juga
   return resultado.ganadorId;
 }
 
-// Con las zonas cerradas, un resultado de zona se corrige solo si los cuadros que se armaron con
-// esas tablas no cambian (decisión 028).
-async function verificarQueNoCambianLosCuadros(torneo: Torneo, corregido: Parameters<typeof correccionCambiaLosCuadros>[3]) {
+// Las zonas como las lee la tabla de posiciones, para comparar el resultado nuevo con lo que hay.
+async function zonasDelTorneo(torneo: Torneo) {
   const conZonas = await prisma.torneo.findUniqueOrThrow({ where: { id: torneo.id }, include: INCLUIR_ZONAS });
-  const { inscriptos, partidos } = inscriptosYPartidos(conZonas);
-  if (correccionCambiaLosCuadros(inscriptos, partidos, torneo, corregido)) {
-    throw new ErrorHttp(409, 'CORRECCION_CAMBIA_LOS_CUADROS');
-  }
+  return inscriptosYPartidos(conZonas);
+}
+
+// El resultado validado contra el torneo, como se guardaría: lo usan la carga y la simulación,
+// así que la vista previa rechaza lo mismo que el guardado.
+function resultadoAGuardar(torneo: Torneo, partido: Partido, datos: DatosResultado) {
+  // Terminado el torneo, sus puntos ya se repartieron (F16).
+  if (TERMINADO.some((e) => e === torneo.estado)) throw new ErrorHttp(409, 'TORNEO_TERMINADO');
+  if (partido.estado === EstadoPrisma.CANCELADA) throw new ErrorHttp(409, 'PARTIDO_CANCELADO');
+  const { jugadorAId, jugadorBId } = partido;
+  // En un cuadro, el partido espera a que llegue el ganador del anterior.
+  if (jugadorAId === null || jugadorBId === null) throw new ErrorHttp(409, 'PARTIDO_SIN_JUGADORES');
+
+  const validado = resultadoDelTorneoSchema(sistemaDeJuego(torneo)).safeParse(datos);
+  if (!validado.success) throw new ErrorHttp(400, 'DATOS_INVALIDOS', camposConError(validado.error));
+  const resultado = validado.data;
+
+  return {
+    jugadorAId,
+    jugadorBId,
+    estado: ESTADO_DEL_RESULTADO[resultado.tipo],
+    ganadorId: ganadorDelResultado(resultado, jugadorAId, jugadorBId),
+    // El W.O. no guarda sets (decisión 016); el abandono guarda lo que se jugó (decisión 027).
+    sets: resultado.tipo === 'walkover' ? [] : resultado.sets,
+  };
+}
+
+// Cómo quedaría la zona con el resultado, sin guardar nada (decisión 032). Con las mismas
+// funciones que GET .../posiciones y con las mismas validaciones que el guardado.
+export async function simularResultado(
+  slug: string,
+  usuarioId: number,
+  torneoId: number,
+  partidoId: number,
+  datos: DatosResultado,
+): Promise<SimulacionDeResultado> {
+  const organizacionId = await organizacionAdministrada(slug, usuarioId);
+  const torneo = await torneoDeLaOrganizacion(organizacionId, torneoId);
+  const partido = await partidoDelTorneo(torneo.id, partidoId);
+  const resultado = resultadoAGuardar(torneo, partido, datos);
+
+  const sinZona = { zona: null, zonasCerradas: torneo.gruposCerrados, cambiaLosCuadros: false };
+  if (partido.fase !== FasePartido.GRUPOS) return sinZona;
+
+  const { inscriptos, partidos } = await zonasDelTorneo(torneo);
+  const nuevo = { ...resultado, grupo: partido.grupo! };
+  return {
+    ...sinZona,
+    zona: simularZona(inscriptos, partidos, torneo, nuevo),
+    cambiaLosCuadros: torneo.gruposCerrados && correccionCambiaLosCuadros(inscriptos, partidos, torneo, nuevo),
+  };
 }
 
 // Guarda el resultado de un partido o lo corrige: reemplaza el que tenga. El ganador lo calcula
@@ -190,26 +238,17 @@ export async function guardarResultado(
   const organizacionId = await organizacionAdministrada(slug, usuarioId);
   const torneo = await torneoDeLaOrganizacion(organizacionId, torneoId);
   const partido = await partidoDelTorneo(torneo.id, partidoId);
+  const resultado = resultadoAGuardar(torneo, partido, datos);
+  const { estado, ganadorId, sets } = resultado;
 
-  // Terminado el torneo, sus puntos ya se repartieron (F16).
-  if (TERMINADO.some((e) => e === torneo.estado)) throw new ErrorHttp(409, 'TORNEO_TERMINADO');
-  if (partido.estado === EstadoPrisma.CANCELADA) throw new ErrorHttp(409, 'PARTIDO_CANCELADO');
-  const { jugadorAId, jugadorBId } = partido;
-  // En un cuadro, el partido espera a que llegue el ganador del anterior.
-  if (jugadorAId === null || jugadorBId === null) throw new ErrorHttp(409, 'PARTIDO_SIN_JUGADORES');
-
-  const validado = resultadoDelTorneoSchema(sistemaDeJuego(torneo)).safeParse(datos);
-  if (!validado.success) throw new ErrorHttp(400, 'DATOS_INVALIDOS', camposConError(validado.error));
-  const resultado = validado.data;
-
-  const estado = ESTADO_DEL_RESULTADO[resultado.tipo];
-  const ganadorId = ganadorDelResultado(resultado, jugadorAId, jugadorBId);
-  // El W.O. no guarda sets (decisión 016); el abandono guarda lo que se jugó (decisión 027).
-  const sets = resultado.tipo === 'walkover' ? [] : resultado.sets;
-
+  // Con las zonas cerradas, un resultado de zona se corrige solo si los cuadros que se armaron
+  // con esas tablas no cambian (decisión 028).
   const deZona = partido.fase === FasePartido.GRUPOS;
   if (deZona && torneo.gruposCerrados) {
-    await verificarQueNoCambianLosCuadros(torneo, { grupo: partido.grupo!, jugadorAId, jugadorBId, ganadorId, estado, sets });
+    const { inscriptos, partidos } = await zonasDelTorneo(torneo);
+    if (correccionCambiaLosCuadros(inscriptos, partidos, torneo, { ...resultado, grupo: partido.grupo! })) {
+      throw new ErrorHttp(409, 'CORRECCION_CAMBIA_LOS_CUADROS');
+    }
   }
 
   await prisma.$transaction(async (tx) => {

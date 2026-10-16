@@ -10,8 +10,10 @@ import { leerSesion, type Sesion } from '../features/auth/sesion';
 import { useCerrarSesion } from '../features/auth/useCerrarSesion';
 import { useSesionInvalida } from '../features/auth/useSesionInvalida';
 import { iniciales, navegacionOrganizador } from '../features/organizador/encabezado';
+import { AlGuardar, TextoConNumeros } from '../features/resultados/AlGuardar';
 import { GrillaDeSets } from '../features/resultados/GrillaDeSets';
 import {
+  cambiaUnGanadorQueYaJugo,
   cargaDelPartido,
   leerCarga,
   nombresDelPartido,
@@ -22,12 +24,11 @@ import {
   textoDelError,
   ubicacionDelPartido,
   type Carga,
-  type Frase,
   type SetEscrito,
   type TipoDeResultado,
 } from '../features/resultados/resultado';
 import { SelectorDePartido } from '../features/resultados/SelectorDePartido';
-import { useGuardarResultado, usePartido, usePartidos } from '../features/resultados/useResultado';
+import { useGuardarResultado, usePartido, usePartidos, useSimulacion } from '../features/resultados/useResultado';
 
 // Sin partido en la ruta, se abre el primero que no tiene resultado (decisión 031).
 export function CargarResultadoPage() {
@@ -159,9 +160,6 @@ function CargarResultado({ sesion, torneoId, partidoId }: { sesion: Sesion; torn
   );
 }
 
-// Los números van en mono (design.md §4).
-const conNumeros = (frase: Frase) => frase.map((parte, i) => (typeof parte === 'number' ? <Numero key={i}>{parte}</Numero> : parte));
-
 function ElegirGanador({
   pregunta,
   partido,
@@ -202,10 +200,23 @@ function TarjetaDelPartido({ sesion, partido }: { sesion: Sesion; partido: Parti
   const [eligiendo, setEligiendo] = useState(false);
   const [carga, setCarga] = useState<Carga>(() => cargaDelPartido(partido));
 
+  // Un partido de cuadro sin sus dos jugadores, o cancelado, no lleva resultado todavía.
+  const sinCarga =
+    partido.jugadorA === null || partido.jugadorB === null
+      ? 'Este partido todavía no tiene a sus dos jugadores: espera a los ganadores de la ronda anterior.'
+      : partido.estado === 'cancelada'
+        ? 'Este partido se canceló: no lleva resultado.'
+        : null;
+
   const nombres = nombresDelPartido(partido);
   const lectura = leerCarga(carga, partido);
-  // Se compara lo que se mandaría: si es lo mismo que ya está guardado, no hay nada que corregir.
+  // La vista previa de una zona la calcula la API; la de un cuadro, la web (decisión 032).
+  const simulacion = useSimulacion(slug, torneoId, partido.id, partido.fase === 'grupos' && !sinCarga ? lectura.datos : null);
+  // Con las zonas cerradas, una corrección que cambia los cuadros no se guarda (decisión 028).
+  const cambiaLosCuadros = simulacion.data?.cambiaLosCuadros === true && !simulacion.desactualizada;
+  const siguienteYaJugado = lectura.datos !== null && cambiaUnGanadorQueYaJugo(lectura.datos, partido, partidos.data?.partidos ?? []);
   const corrigiendo = tieneResultado(partido);
+  // Se compara lo que se mandaría: si es lo mismo que ya está guardado, no hay nada que corregir.
   const cambio = JSON.stringify(lectura.datos) !== JSON.stringify(leerCarga(cargaDelPartido(partido), partido).datos);
   const resumen = lectura.datos && resumenDelResultado(lectura.datos, partido);
   const recienGuardado = guardar.isSuccess && !cambio;
@@ -224,14 +235,6 @@ function TarjetaDelPartido({ sesion, partido }: { sesion: Sesion; partido: Parti
   function alternarTipo(tipo: TipoDeResultado) {
     cambiar({ tipo: carga.tipo === tipo ? 'jugado' : tipo });
   }
-
-  // Un partido de cuadro sin sus dos jugadores, o cancelado, no lleva resultado todavía.
-  const sinCarga =
-    partido.jugadorA === null || partido.jugadorB === null
-      ? 'Este partido todavía no tiene a sus dos jugadores: espera a los ganadores de la ronda anterior.'
-      : partido.estado === 'cancelada'
-        ? 'Este partido se canceló: no lleva resultado.'
-        : null;
 
   return (
     <Marco sesion={sesion}>
@@ -287,7 +290,9 @@ function TarjetaDelPartido({ sesion, partido }: { sesion: Sesion; partido: Parti
               {resumen && (
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-lima-tenue px-4 py-3">
                   <span className="size-2 shrink-0 rounded-full bg-lima" />
-                  <p className="text-[15px] font-semibold">{conNumeros(resumen.titulo)}</p>
+                  <p className="text-[15px] font-semibold">
+                    <TextoConNumeros frase={resumen.titulo} />
+                  </p>
                   {resumen.detalle && <p className="font-mono text-[13px] text-gris-500">{resumen.detalle}</p>}
                 </div>
               )}
@@ -302,19 +307,21 @@ function TarjetaDelPartido({ sesion, partido }: { sesion: Sesion; partido: Parti
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-linea px-6 py-[18px]">
+            <AlGuardar partido={partido} datos={lectura.datos} simulacion={simulacion} siguienteYaJugado={siguienteYaJugado} />
+
+            <div className="flex items-center justify-between gap-4 border-t border-linea px-6 py-[18px]">
               {guardar.error ? (
-                <p className="max-w-[420px] text-sm text-rojo-texto">{textoDelError(guardar.error)}</p>
+                <p className="min-w-0 flex-1 text-sm text-rojo-texto">{textoDelError(guardar.error)}</p>
               ) : recienGuardado ? (
-                <p className="text-[15px] font-semibold">
+                <p className="min-w-0 flex-1 text-[15px] font-semibold">
                   {siguiente ? 'Resultado guardado.' : 'Resultado guardado. No falta cargar ningún otro.'}
                 </p>
               ) : (
-                <p className="max-w-[420px] text-sm text-gris-500">
+                <p className="min-w-0 flex-1 text-sm text-gris-500">
                   Podés corregirlo después, mientras no cambie a quién ya se ubicó en los cuadros.
                 </p>
               )}
-              <div className="flex gap-2.5">
+              <div className="flex shrink-0 gap-2.5">
                 <Boton onClick={() => navegar(`/torneos/${torneoId}/sorteo`)}>{recienGuardado ? 'Volver al sorteo' : 'Cancelar'}</Boton>
                 {recienGuardado && siguiente ? (
                   <Boton
@@ -328,7 +335,9 @@ function TarjetaDelPartido({ sesion, partido }: { sesion: Sesion; partido: Parti
                   <Boton
                     variante="organizador"
                     className="font-semibold"
-                    disabled={lectura.datos === null || (corrigiendo && !cambio) || guardar.isPending}
+                    disabled={
+                      lectura.datos === null || (corrigiendo && !cambio) || cambiaLosCuadros || siguienteYaJugado || guardar.isPending
+                    }
                     onClick={() => lectura.datos && guardar.mutate(lectura.datos)}
                   >
                     {guardar.isPending ? 'Guardando…' : corrigiendo ? 'Guardar corrección' : 'Guardar resultado'}

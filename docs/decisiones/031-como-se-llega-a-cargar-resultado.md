@@ -22,7 +22,7 @@ Hay que decidir por dónde se entra a cargar un resultado y cómo se elige el pa
 Opción 3.
 
 - **La ruta es `/torneos/:id/resultados/:partidoId?`.** Sin `partidoId`, abre el primer partido que no tiene resultado, en el orden de la lista. Si no falta ninguno, muestra la lista para elegir cuál corregir.
-- **"Cambiar partido"** despliega, dentro de la misma tarjeta, los partidos del torneo agrupados por zona y por cuadro, con los que faltan primero. Los de cuadro que esperan al ganador de la ronda anterior se ven pero no se pueden abrir, y los cancelados no aparecen.
+- **"Cambiar partido"** despliega, dentro de la misma tarjeta, los partidos del torneo agrupados por zona y por ronda de cada cuadro, con los que faltan primero. Los de cuadro que esperan al ganador de la ronda anterior se ven pero no se pueden abrir, y los cancelados no aparecen.
 - **La lista sale de un endpoint nuevo, `GET /torneos/:id/partidos`**, liviano: id, fase, zona o cuadro y ronda, jugadores, estado y ganador. Los sets se piden al abrir cada partido.
 - **Se entra con "Cargar resultados"** en el pie del Sorteo de zonas, una vez confirmado.
 - **Migas:** "<edición · categoría> / Zona A / Cargar resultado", o el cuadro y la ronda si es de cuadro ("Campeonato · semifinales"). La edición lleva al Sorteo de zonas. Para nombrar la ronda, el partido trae las rondas de su cuadro.

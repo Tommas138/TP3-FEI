@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { ClaveCuadro, EstadoPartido } from './cuadros';
+import type { ZonaDePosiciones } from './posiciones';
 
 // Carga de resultados (F06). La organización manda los sets; el ganador lo calcula la API.
 // Las reglas del sistema de juego están en 02-dominio.md §5 y sus parámetros, en el torneo
@@ -228,4 +229,17 @@ export type PartidosDelTorneo = {
   // "Primavera 2026 · Tercera"
   nombre: string;
   partidos: PartidoDeLaLista[];
+};
+
+// La zona como quedaría con el resultado, y cuántos de sus partidos seguirían sin resultado.
+export type ZonaSimulada = ZonaDePosiciones & { partidosSinResultado: number };
+
+// Lo que pasaría al guardar un resultado, sin guardarlo: la vista previa de la carga (decisión 032).
+export type SimulacionDeResultado = {
+  // null en un partido de cuadro: esa vista previa la arma la web.
+  zona: ZonaSimulada | null;
+  zonasCerradas: boolean;
+  // Con las zonas cerradas, si el resultado cambia la siembra de los cuadros ya armados. Si la
+  // cambia, no se puede guardar (decisión 028).
+  cambiaLosCuadros: boolean;
 };

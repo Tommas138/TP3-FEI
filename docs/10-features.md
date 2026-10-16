@@ -152,6 +152,7 @@ La organización podrá registrar el resultado de cada partido indicando los gam
 - Un resultado de cuadro hace avanzar al ganador en la misma transacción.
 - La carga es solo de la organización: que también puedan cargar los jugadores sigue abierto (decisión abierta 12).
 - La pantalla *Cargar resultado* (`/torneos/:id/resultados/:partidoId?`) se abre desde el Sorteo de zonas confirmado, y el partido se elige dentro de la pantalla ([decisión 031](decisiones/031-como-se-llega-a-cargar-resultado.md)).
+- Antes de guardar, la pantalla dice dónde queda cada jugador en la zona y a qué cuadro va: la API simula el resultado sin guardarlo ([decisión 032](decisiones/032-vista-previa-del-resultado.md)). En un cuadro dice quién pasa de ronda o quién es campeón. Lo que la API rechazaría por los cuadros ya armados se avisa antes.
 
 ---
 

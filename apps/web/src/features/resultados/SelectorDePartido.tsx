@@ -20,16 +20,13 @@ const colorDelEstado: Record<Situacion, string> = {
 };
 
 function Fila({ fila, torneoId, actual }: { fila: FilaDeLaLista; torneoId: number; actual?: number }) {
-  const { partido, ronda, situacion, estado } = fila;
+  const { partido, situacion, estado } = fila;
   const [a, b] = nombresDelPartido(partido);
   const esActual = partido.id === actual;
   const contenido = (
     <>
-      <span className="flex min-w-0 items-baseline gap-2">
-        {ronda && <span className="shrink-0 font-mono text-xs text-gris-500">{ronda}</span>}
-        <span className={`truncate ${esActual ? 'font-semibold' : ''}`}>
-          {a} · {b}
-        </span>
+      <span className={`truncate ${esActual ? 'font-semibold' : ''}`}>
+        {a} · {b}
       </span>
       <span className={`shrink-0 text-[13px] ${colorDelEstado[situacion]}`}>{estado}</span>
     </>
@@ -51,8 +48,8 @@ function Fila({ fila, torneoId, actual }: { fila: FilaDeLaLista; torneoId: numbe
   );
 }
 
-// «Cambiar partido»: los partidos del torneo agrupados por zona y por cuadro, con los que
-// faltan primero (decisión 031). Es una versión mínima de lo que va a ser el tablero (F15).
+// «Cambiar partido»: los partidos del torneo agrupados por zona y por ronda de cada cuadro,
+// con los que faltan primero (decisión 031). Es una versión mínima de lo que va a ser el tablero (F15).
 export function SelectorDePartido({ slug, torneoId, actual }: Props) {
   const partidos = usePartidos(slug, torneoId);
 
@@ -78,17 +75,19 @@ export function SelectorDePartido({ slug, torneoId, actual }: Props) {
 
   return (
     <div className="grid gap-x-6 gap-y-5 px-6 py-5 md:grid-cols-2">
-      {secciones.map(({ titulo, faltan, filas }) => (
+      {secciones.map(({ titulo, faltan, completa, filas }) => (
         <section key={titulo} className="flex flex-col gap-1.5">
           <div className="flex items-baseline justify-between gap-3 px-2">
             <h2 className="text-[13px] font-semibold text-gris-500">{titulo}</h2>
-            <span className="text-xs text-gris-500">
-              {faltan === 0 ? (
-                'completa'
-              ) : (
+            <span className="shrink-0 text-xs text-gris-500">
+              {faltan > 0 ? (
                 <>
                   {faltan === 1 ? 'falta' : 'faltan'} <Numero>{faltan}</Numero>
                 </>
+              ) : completa ? (
+                'completa'
+              ) : (
+                'sin jugadores todavía'
               )}
             </span>
           </div>

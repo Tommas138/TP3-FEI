@@ -1,7 +1,8 @@
 // Tabla de posiciones de cada zona con la línea de corte (F07).
 // Lógica pura: recibe inscriptos y partidos ya leídos, devuelve las zonas. No toca la base.
-import type { CriterioDesempate, DestinoDeZona, ZonaDePosiciones } from '@setpoint/shared';
-import { tablaDeZona, type PartidoDeLaTabla } from './clasificacion';
+import type { CriterioDesempate, DestinoDeZona, ZonaDePosiciones, ZonaSimulada } from '@setpoint/shared';
+import { conElResultado, tablaDeZona, type PartidoDeLaTabla } from './clasificacion';
+import { partidosSinResultado } from './cuadros';
 
 export type InscriptoEnZona = {
   jugadorId: number;
@@ -45,4 +46,21 @@ export function zonasConPosiciones(inscriptos: InscriptoEnZona[], partidos: Part
       }),
     };
   });
+}
+
+// La zona de un partido como quedaría con su resultado nuevo, sin guardar nada: es la vista
+// previa de la carga (decisión 032). Sale de la misma cuenta que las posiciones.
+export function simularZona(
+  inscriptos: InscriptoEnZona[],
+  partidos: PartidoEnZona[],
+  corte: Corte,
+  nuevo: PartidoEnZona,
+): ZonaSimulada {
+  const deLaZona = conElResultado(partidos, nuevo).filter((p) => p.grupo === nuevo.grupo);
+  const [zona] = zonasConPosiciones(
+    inscriptos.filter((i) => i.grupo === nuevo.grupo),
+    deLaZona,
+    corte,
+  );
+  return { ...zona, partidosSinResultado: partidosSinResultado(deLaZona) };
 }

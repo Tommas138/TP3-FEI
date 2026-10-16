@@ -124,6 +124,10 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~¿Cuándo se arman los cuadros?~~ **Cuando la organización cierra las zonas**, con todos los partidos resueltos ([decisión 026](decisiones/026-cierre-de-zonas.md)). Un cierre automático no se dispararía nunca con un partido vencido, que según el reglamento lo resuelve el Comité
 - ~~¿El inicio muestra una tarjeta por convocatoria o por categoría?~~ **Por categoría, desde que se publica** ([decisión 026](decisiones/026-una-tarjeta-por-categoria-en-el-inicio.md)). Cada categoría cierra la inscripción y se sortea por separado, así que puede estar en un momento distinto que las demás. Los borradores siguen por convocatoria
 - ~~¿Qué fecha llevan los puntos importados de la planilla?~~ **El 1° de enero del año del casillero** ([decisión 008](decisiones/008-fecha-de-los-movimientos-importados.md)). La planilla no tiene fechas y el ranking solo necesita que un torneo real de esa etapa y ese año le gane al importado
+- ~~¿Cómo se registra un abandono?~~ **Se guarda lo que se jugó y se computa 6-0 6-0, como un W.O.** ([decisión 027](decisiones/027-abandono.md)). La base registra el partido que de verdad empezó, y para los desempates abandonar vale lo mismo que dar W.O., como pide F06
+- ~~¿Qué pasa al corregir un resultado que ya tuvo efecto?~~ **Se corrige si no cambia lo que ya se armó con él** ([decisión 028](decisiones/028-correccion-de-resultados.md)). En un cuadro, si el ganador es el mismo o el partido siguiente no se jugó; con las zonas cerradas, si la siembra de los cuadros queda igual. Así nunca se borra un partido que se jugó, y se pueden arreglar los errores de tipeo, que casi nunca cambian quién gana
+- ~~¿Cuándo pasa el torneo a grupos en curso?~~ **Al llegar la fecha de inicio**, con una tarea de la API que revisa cada hora ([decisión 029](decisiones/029-grupos-en-curso.md)). Es cuando arranca el plazo de la fase de grupos, y así el estado guardado es el real sin calcularlo en cada consulta
+- ~~¿Son obligatorios los puntos del tie-break?~~ **No: si vienen se validan** ([decisión 030](decisiones/030-puntos-del-tie-break-opcionales.md)). No cambian ninguna tabla, en los mensajes del grupo muchas veces no vienen, y un circuito con tie-break con diferencia de 2 puede cargar su resultado igual
 
 ---
 
@@ -166,6 +170,8 @@ Lista para llevar a la próxima charla. Las respondidas se tachan.
     *Contexto: en una zona de 4 se juega un partido más. Hoy el sistema descarta el partido contra el último de cada zona de 4 ([decisión 018](decisiones/018-comparar-zonas-de-distinto-tamano.md)).*
 14. ¿Cómo arman hoy los cruces de la primera ronda de Campeonato y Complementaria? ¿Hay un patrón fijo (1° de A contra 2° de B), se sortea, o lo decide el Comité?
     *Contexto: el reglamento no lo dice. Hoy el sistema siembra a todos los clasificados (ganadores de zona primero) y separa a los de una misma zona hasta la final ([decisión 022](decisiones/022-ubicacion-en-el-cuadro.md)).*
+15. Si un jugador **abandona** un partido empezado (por ejemplo, 6-3 2-1 y se lesiona), ¿cómo lo computan en la tabla de la zona? ¿Como un W.O., o le cuentan los games que llegó a ganar?
+    *Contexto: el reglamento solo habla del W.O. Hoy el sistema guarda el marcador hasta el abandono y lo computa 6-0 6-0, igual que un W.O. ([decisión 027](decisiones/027-abandono.md)).*
 
 ### Resultados
 

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { EstadoPartido, PartidoDeLaTabla, ZonaConPartidos } from '../../src/modules/competencia/clasificacion';
+import type { PartidoEnZona } from '../../src/modules/competencia/posiciones';
 import {
   agruparZonas,
   armarCuadro,
+  correccionCambiaLosCuadros,
   fechaLimiteDeRonda,
   lugarSiguiente,
   ordenDeSiembra,
@@ -288,5 +290,54 @@ describe('lugarSiguiente', () => {
       { ordenEnRonda: 2, lado: 'A' },
       { ordenEnRonda: 2, lado: 'B' },
     ]);
+  });
+});
+
+describe('correccionCambiaLosCuadros', () => {
+  // Las zonas como las lee la API: inscriptos y partidos sueltos, cada uno con su zona.
+  function leidas(zonas: ZonaConPartidos[]) {
+    return {
+      inscriptos: zonas.flatMap((z) =>
+        z.integrantes.map((i) => ({ ...i, grupo: z.grupo, nombre: 'Juan', apellido: `J${i.jugadorId}` })),
+      ),
+      partidos: zonas.flatMap((z) => z.partidos.map((p) => ({ ...p, grupo: z.grupo }))),
+    };
+  }
+  const { inscriptos, partidos } = leidas(zonasEnSerpentina([4, 4, 4, 4]));
+  const conConsuelo = { clasificanPorGrupo: 2, tieneComplementaria: true };
+  const sinConsuelo = { clasificanPorGrupo: 2, tieneComplementaria: false };
+
+  const corregido = (jugadorAId: number, jugadorBId: number, ganadorId: number, sets: [number, number][]): PartidoEnZona => ({
+    grupo: GRUPOS[Math.floor(jugadorAId / 10) - 1],
+    jugadorAId,
+    jugadorBId,
+    ganadorId,
+    estado: 'JUGADA',
+    sets: sets.map(([gamesA, gamesB]) => ({ gamesA, gamesB, esSuperTieBreak: false })),
+  });
+
+  it('el mismo resultado no cambia nada', () => {
+    const igual = corregido(12, 13, 12, [[6, 0], [6, 0]]);
+    expect(correccionCambiaLosCuadros(inscriptos, partidos, conConsuelo, igual)).toBe(false);
+  });
+
+  it('cambia los cuadros si cambia quién clasifica', () => {
+    // El 13 le gana al 12 y lo pasa en la zona A: clasifica a Campeonato y el 12 baja al consuelo.
+    const vuelta = corregido(12, 13, 13, [[0, 6], [0, 6]]);
+    expect(correccionCambiaLosCuadros(inscriptos, partidos, conConsuelo, vuelta)).toBe(true);
+  });
+
+  it('cambia los cuadros si cambia la siembra entre zonas, aunque clasifiquen los mismos', () => {
+    // Los ganadores de zona empatan en todo y los ordena el ranking. Con un game perdido, el 11
+    // deja de ser el primer sembrado.
+    const unGame = corregido(11, 14, 11, [[6, 1], [6, 0]]);
+    expect(correccionCambiaLosCuadros(inscriptos, partidos, sinConsuelo, unGame)).toBe(true);
+  });
+
+  it('no cambia los cuadros si nadie cambia de lugar', () => {
+    // El 41 ya era el último de los ganadores: con un game perdido sigue ahí. Sin cuadro
+    // consuelo, el game que gana el 44 no mueve a nadie.
+    const unGame = corregido(41, 44, 41, [[6, 1], [6, 0]]);
+    expect(correccionCambiaLosCuadros(inscriptos, partidos, sinConsuelo, unGame)).toBe(false);
   });
 });

@@ -7,5 +7,6 @@ export * from './schemas/sorteo';
 export * from './schemas/posiciones';
 export * from './schemas/inscripciones';
 export * from './schemas/cuadros';
+export * from './schemas/resultado';
 export * from './formato';
 export * from './desempate';

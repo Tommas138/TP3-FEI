@@ -1,0 +1,24 @@
+import { Router } from 'express';
+import { resultadoSchema } from '@setpoint/shared';
+import { autenticar } from '../../middleware/autenticar';
+import { validar } from '../../middleware/validar';
+import { guardarResultado, obtenerPartido } from './resultados.service';
+
+// Se monta en /api/organizaciones/:slug/torneos/:id/partidos: mergeParams trae el slug y el id.
+// Los resultados los carga solo la organización (03-flujo-organizacion.md §10). Que también
+// puedan cargarlos los jugadores es la decisión abierta 12.
+export const resultadosRouter = Router({ mergeParams: true });
+
+resultadosRouter.use(autenticar);
+
+resultadosRouter.get('/:partidoId', async (req, res) => {
+  const { slug, id, partidoId } = req.params as { slug: string; id: string; partidoId: string };
+  res.json(await obtenerPartido(slug, res.locals.usuarioId, Number(id), Number(partidoId)));
+});
+
+// Cargar y corregir es lo mismo: el resultado nuevo reemplaza al que haya (decisión 028).
+// Acá se valida la forma; contra el sistema de juego del torneo se valida en el servicio.
+resultadosRouter.put('/:partidoId/resultado', validar(resultadoSchema), async (req, res) => {
+  const { slug, id, partidoId } = req.params as { slug: string; id: string; partidoId: string };
+  res.json(await guardarResultado(slug, res.locals.usuarioId, Number(id), Number(partidoId), req.body));
+});

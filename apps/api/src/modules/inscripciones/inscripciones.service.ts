@@ -1,5 +1,6 @@
 import { EstadoInscripcion, EstadoTorneo, type Prisma } from '@prisma/client';
 import type { EstadoTorneo as ClaveEstado, InscripcionesDelTorneo, MedioPago } from '@setpoint/shared';
+import { diaEnArgentina } from '../../lib/fechas';
 import { organizacionAdministrada } from '../../lib/permisos';
 import { prisma } from '../../lib/prisma';
 import { ErrorHttp } from '../../middleware/errores';
@@ -27,10 +28,6 @@ const CON_INSCRIPCIONES = {
 } satisfies Prisma.TorneoInclude;
 
 type TorneoConInscripciones = Prisma.TorneoGetPayload<{ include: typeof CON_INSCRIPCIONES }>;
-
-// Día en Argentina como 'AAAA-MM-DD'. En UTC, de noche ya sería mañana.
-const diaEnArgentina = (fecha: Date) =>
-  new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(fecha);
 
 // El :id de la URL es el de un torneo, no el de la convocatoria: cada categoría cierra aparte.
 async function torneoDeLaOrganizacion(organizacionId: number, torneoId: number) {

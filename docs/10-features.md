@@ -145,6 +145,14 @@ La organización podrá registrar el resultado de cada partido indicando los gam
 
 **Entrega: 50%**
 
+**Estado:** implementada en la API (`PUT .../torneos/:id/partidos/:partidoId/resultado`, [03-flujo-organizacion.md](03-flujo-organizacion.md) §10).
+- El resultado se valida contra el sistema de juego del torneo con `resultadoDelTorneoSchema()` en `packages/shared`, y el ganador lo calcula el servidor. Los puntos del tie-break son opcionales ([decisión 030](decisiones/030-puntos-del-tie-break-opcionales.md)).
+- El W.O. no guarda sets ([decisión 016](decisiones/016-walkover-sin-sets-guardados.md)). El abandono guarda lo que se jugó y se computa como un W.O. ([decisión 027](decisiones/027-abandono.md)).
+- Corregir es volver a cargar: se puede mientras no cambie lo que ya se armó con ese resultado ([decisión 028](decisiones/028-correccion-de-resultados.md)).
+- Un resultado de cuadro hace avanzar al ganador en la misma transacción.
+- La carga es solo de la organización: que también puedan cargar los jugadores sigue abierto (decisión abierta 12).
+- Falta la pantalla *Cargar resultado*.
+
 ---
 
 ## F07 — Clasificación automática y desempates
@@ -175,7 +183,7 @@ Al terminar la fase de grupos, el sistema armará automáticamente los cuadros e
 
 **Entrega: 50%**
 
-**Estado:** implementada en la API. La organización cierra las zonas (`POST .../torneos/:id/cuadros`) y en ese momento se arman los dos cuadros completos ([decisión 026](decisiones/026-cierre-de-zonas.md)). Dónde va cada uno sale de una siembra única de los clasificados ([decisión 022](decisiones/022-ubicacion-en-el-cuadro.md)), y los byes no generan partido ([decisión 023](decisiones/023-byes-sin-partido.md)). `GET .../torneos/:id/cuadros` los devuelve, por ahora solo a la organización ([decisión 019](decisiones/019-acceso-a-las-posiciones.md)). El avance del ganador está en `avanzarGanador()`, que tiene que llamar la carga de resultados (F06), todavía sin implementar. Faltan la pantalla *Los dos cuadros* (con F10) y el nombre configurable del cuadro consuelo.
+**Estado:** implementada en la API. La organización cierra las zonas (`POST .../torneos/:id/cuadros`) y en ese momento se arman los dos cuadros completos ([decisión 026](decisiones/026-cierre-de-zonas.md)). Dónde va cada uno sale de una siembra única de los clasificados ([decisión 022](decisiones/022-ubicacion-en-el-cuadro.md)), y los byes no generan partido ([decisión 023](decisiones/023-byes-sin-partido.md)). `GET .../torneos/:id/cuadros` los devuelve, por ahora solo a la organización ([decisión 019](decisiones/019-acceso-a-las-posiciones.md)). El ganador avanza al cargarse cada resultado de cuadro (F06), con `avanzarGanador()`. Faltan la pantalla *Los dos cuadros* (con F10) y el nombre configurable del cuadro consuelo.
 
 ---
 

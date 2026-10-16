@@ -49,6 +49,43 @@ export function siembraDelCuadro(zonas: ZonaConPartidos[], puestos: number[]): C
   );
 }
 
+export type FormatoDeCuadros = { clasificanPorGrupo: number; tieneComplementaria: boolean };
+
+// Las siembras de los dos cuadros con las zonas como están. Sin cuadro consuelo, la segunda
+// queda vacía.
+export function siembrasDeLosCuadros(inscriptos: InscriptoEnZona[], partidos: PartidoEnZona[], formato: FormatoDeCuadros) {
+  const zonas = agruparZonas(inscriptos, partidos);
+  const puestos = puestosPorCuadro(
+    formato.clasificanPorGrupo,
+    formato.tieneComplementaria,
+    Math.max(...zonas.map((z) => z.integrantes.length)),
+  );
+  return {
+    campeonato: siembraDelCuadro(zonas, puestos.campeonato),
+    complementaria: siembraDelCuadro(zonas, puestos.complementaria),
+  };
+}
+
+// Con las zonas cerradas, un resultado de zona se corrige solo si los cuadros que se armaron
+// siguen siendo los mismos: la misma siembra en los dos (decisión 028). En la fase de grupos
+// cada par de jugadores se cruza una sola vez, así que el par identifica al partido.
+export function correccionCambiaLosCuadros(
+  inscriptos: InscriptoEnZona[],
+  partidos: PartidoEnZona[],
+  formato: FormatoDeCuadros,
+  corregido: PartidoEnZona,
+) {
+  const esElCorregido = (p: PartidoEnZona) => p.jugadorAId === corregido.jugadorAId && p.jugadorBId === corregido.jugadorBId;
+  const antes = siembrasDeLosCuadros(inscriptos, partidos, formato);
+  const despues = siembrasDeLosCuadros(
+    inscriptos,
+    partidos.map((p) => (esElCorregido(p) ? corregido : p)),
+    formato,
+  );
+  const ids = (siembra: Clasificado[]) => siembra.map((c) => c.jugadorId).join(',');
+  return ids(antes.campeonato) !== ids(despues.campeonato) || ids(antes.complementaria) !== ids(despues.complementaria);
+}
+
 // Orden de siembra estándar: en qué lugar del cuadro va cada siembra, de arriba hacia abajo.
 // El 1 y el 2 solo pueden cruzarse en la final. Con 8 lugares: [1, 8, 4, 5, 2, 7, 3, 6].
 export function ordenDeSiembra(lugares: number): number[] {

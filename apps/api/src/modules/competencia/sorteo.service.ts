@@ -15,6 +15,7 @@ import {
   type ModoSorteo,
   type Sorteo,
 } from '@setpoint/shared';
+import { hoy } from '../../lib/fechas';
 import { organizacionAdministrada } from '../../lib/permisos';
 import { prisma } from '../../lib/prisma';
 import { ErrorHttp } from '../../middleware/errores';
@@ -23,6 +24,7 @@ import {
   alcanzanParaLasZonas,
   armarZonasManuales,
   distribuirEnZonas,
+  empezoLaFaseDeGrupos,
   generarPartidosDeZona,
   MINIMO_POR_ZONA,
   ordenarSiembra,
@@ -221,7 +223,8 @@ function finDeGrupos(torneo: TorneoConInscriptos) {
   return hasta === null ? null : new Date(`${hasta}T00:00:00.000Z`);
 }
 
-// Confirma el borrador: genera los partidos de zona y el torneo pasa a zonas generadas.
+// Confirma el borrador: genera los partidos de zona y el torneo pasa a zonas generadas, o a
+// grupos en curso si ya llegó la fecha de inicio (decisión 029).
 export async function confirmarSorteo(slug: string, usuarioId: number, torneoId: number) {
   const organizacionId = await organizacionAdministrada(slug, usuarioId);
   const torneo = await torneoDeLaOrganizacion(organizacionId, torneoId);
@@ -233,11 +236,12 @@ export async function confirmarSorteo(slug: string, usuarioId: number, torneoId:
   if (zonas.some((z) => z.integrantes.length < MINIMO_POR_ZONA)) throw new ErrorHttp(409, 'SORTEO_DESACTUALIZADO');
 
   const fechaLimite = finDeGrupos(torneo);
+  const estado = empezoLaFaseDeGrupos(torneo.fechaInicio, hoy()) ? EstadoTorneo.GRUPOS_EN_CURSO : EstadoTorneo.ZONAS_GENERADAS;
   await prisma.$transaction(async (tx) => {
     // Con el estado como condición, dos confirmaciones simultáneas no generan los partidos dos veces.
     const { count } = await tx.torneo.updateMany({
       where: { id: torneo.id, estado: EstadoTorneo.INSCRIPCIONES_CERRADAS, sorteoConfirmado: false },
-      data: { estado: EstadoTorneo.ZONAS_GENERADAS, sorteoConfirmado: true },
+      data: { estado, sorteoConfirmado: true },
     });
     if (count === 0) throw new ErrorHttp(409, 'TORNEO_NO_SORTEABLE');
 

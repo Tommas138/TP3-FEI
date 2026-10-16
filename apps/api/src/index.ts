@@ -4,6 +4,7 @@ import cors from 'cors';
 import { manejarErrores } from './middleware/errores';
 import { authRouter } from './modules/auth/auth.routes';
 import { cuadrosRouter } from './modules/competencia/cuadros.routes';
+import { programarInicioDeGrupos } from './modules/competencia/inicio-de-grupos';
 import { posicionesRouter } from './modules/competencia/posiciones.routes';
 import { resultadosRouter } from './modules/competencia/resultados.routes';
 import { sorteoRouter } from './modules/competencia/sorteo.routes';
@@ -39,3 +40,5 @@ const PORT = Number(process.env.PORT) || 3000;
 app.listen(PORT, () => {
   console.log(`API escuchando en http://localhost:${PORT}`);
 });
+
+programarInicioDeGrupos();

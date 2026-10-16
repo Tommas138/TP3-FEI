@@ -40,8 +40,8 @@ borrador → publicado → inscripciones_cerradas → zonas_generadas
 | `borrador` | Se crea el torneo | Editar todo. No visible |
 | `publicado` | La organización lo publica | Inscripciones abiertas. Se sigue editando, salvo las categorías |
 | `inscripciones_cerradas` | La organización cierra la inscripción de la categoría (§7). Hoy no se cierra sola al llenarse el cupo ni al vencer la fecha | Sortear las zonas. Con F13 completa, además, resolver la lista de espera |
-| `zonas_generadas` | Se ejecuta el sorteo | Comunicar grupos y plazos |
-| `grupos_en_curso` | Arranca el plazo de 3 semanas | Cargar resultados de zona |
+| `zonas_generadas` | Se confirma el sorteo, antes de la fecha de inicio | Comunicar grupos y plazos. Cargar los partidos que se adelanten |
+| `grupos_en_curso` | Llega la fecha de inicio: arranca el plazo de 3 semanas. Lo cambia una tarea de la API que revisa cada hora; si el sorteo se confirma después de esa fecha, entra directo ([decisión 029](decisiones/029-grupos-en-curso.md)) | Cargar resultados de zona |
 | `eliminatorias` | Cierran todas las zonas | El cuadro principal y, si hay, el consuelo en juego, con el plazo por ronda del torneo. En la interfaz: "cuadros" |
 | `finalizado` | Se definen ambos campeones | Solo lectura. Se impactan los puntos |
 

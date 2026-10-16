@@ -12,6 +12,7 @@ import type {
   EstadoTorneo as ClaveEstado,
   ResumenConvocatoria,
 } from '@setpoint/shared';
+import { hoy } from '../../lib/fechas';
 import { organizacionAdministrada } from '../../lib/permisos';
 import { prisma } from '../../lib/prisma';
 import { ErrorHttp } from '../../middleware/errores';
@@ -270,9 +271,6 @@ async function editarPublicada(torneos: TorneoConRelaciones[], datos: DatosConvo
     torneos.map((t) => prisma.torneo.update({ where: { id: t.id }, data: { ...compartidas, cupo: cupoDe(t) } })),
   );
 }
-
-// Día de hoy en Argentina como 'AAAA-MM-DD'. En UTC, de noche ya sería mañana.
-const hoy = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date());
 
 // Publicar abre la inscripción: el torneo se vuelve visible para los jugadores.
 export async function publicarConvocatoria(slug: string, usuarioId: number, torneoId: number) {

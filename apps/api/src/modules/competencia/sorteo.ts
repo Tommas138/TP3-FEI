@@ -136,3 +136,9 @@ export function generarPartidosDeZona(zonas: Zona[]): PartidoDeZona[] {
   }
   return partidos;
 }
+
+// La fase de grupos arranca en la fecha de inicio del torneo (decisión 029). Si el sorteo se
+// confirma ese día o después, el torneo pasa directo a grupos en curso. `hoy` es 'AAAA-MM-DD'.
+export function empezoLaFaseDeGrupos(fechaInicio: Date | null, hoy: string) {
+  return fechaInicio !== null && fechaInicio.toISOString().slice(0, 10) <= hoy;
+}

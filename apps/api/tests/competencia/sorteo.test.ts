@@ -3,6 +3,7 @@ import {
   alcanzanParaLasZonas,
   armarZonasManuales,
   distribuirEnZonas,
+  empezoLaFaseDeGrupos,
   generarPartidosDeZona,
   mezclar,
   ordenarSiembra,
@@ -350,5 +351,19 @@ describe('armarZonasManuales', () => {
     );
 
     expect('zonas' in resultado).toBe(true);
+  });
+});
+
+describe('empezoLaFaseDeGrupos', () => {
+  const dia = (fecha: string) => new Date(`${fecha}T00:00:00.000Z`);
+
+  it('arranca el día de la fecha de inicio, no antes', () => {
+    expect(empezoLaFaseDeGrupos(dia('2026-10-17'), '2026-10-16')).toBe(false);
+    expect(empezoLaFaseDeGrupos(dia('2026-10-16'), '2026-10-16')).toBe(true);
+    expect(empezoLaFaseDeGrupos(dia('2026-10-01'), '2026-10-16')).toBe(true);
+  });
+
+  it('sin fecha de inicio no arranca', () => {
+    expect(empezoLaFaseDeGrupos(null, '2026-10-16')).toBe(false);
   });
 });

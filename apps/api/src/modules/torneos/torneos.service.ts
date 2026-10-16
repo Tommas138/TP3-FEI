@@ -323,12 +323,16 @@ export async function listarConvocatorias(slug: string, usuarioId: number): Prom
         id: c.id,
         nombre: c.nombre,
         estado: c.estado,
-        categorias: c.torneos.map((t) => t.categoria),
+        torneos: grupo.map((t) => ({
+          id: t.id,
+          categoria: t.categoria.nombre,
+          estado: aClave<ClaveEstado>(t.estado),
+          cupo: t.cupo,
+          inscriptos: t._count.inscripciones,
+        })),
         cierreInscripcion: c.cierreInscripcion,
         fechaInicio: c.fechaInicio,
         precio: c.precio,
-        cupo: grupo.reduce((suma, t) => suma + t.cupo, 0),
-        inscriptos: grupo.reduce((suma, t) => suma + t._count.inscripciones, 0),
       };
     })
     .sort((a, b) => b.id - a.id);

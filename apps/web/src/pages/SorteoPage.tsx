@@ -168,6 +168,7 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
   const sortear = useSortear(slug, sorteo.torneoId);
   const cargar = useCargarZonas(slug, sorteo.torneoId);
   const confirmar = useConfirmarSorteo(slug, sorteo.torneoId);
+  const navegar = useNavigate();
   // Si ya hay borrador, se sigue con el modo con que se armó.
   const borradorManual = sorteo.modoSorteo === 'manual' && sorteo.zonas !== null;
   const [ejecutor, setEjecutor] = useState<ModoSorteo>(sorteo.zonas !== null ? sorteo.modoSorteo : 'automatico');
@@ -361,6 +362,12 @@ function SorteoDeZonas({ sesion, sorteo }: { sesion: Sesion; sorteo: Sorteo }) {
             Los jugadores tienen <Numero>{sorteo.plazoGruposDias}</Numero> días para jugar la fase de grupos.
           </p>
         </div>
+        {/* Hasta que exista el tablero (F15), los resultados se cargan desde acá (decisión 031). */}
+        {sorteo.confirmado && (
+          <Boton variante="organizador" grande className="font-semibold" onClick={() => navegar(`/torneos/${sorteo.torneoId}/resultados`)}>
+            Cargar resultados
+          </Boton>
+        )}
         {!sorteo.confirmado && (
           <div className="flex gap-2.5">
             {enPantalla ? (

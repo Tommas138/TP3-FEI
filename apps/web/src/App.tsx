@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import { Catalogo } from './Catalogo';
+import { CargarResultadoPage } from './pages/CargarResultadoPage';
 import { ImportarPadronPage } from './pages/ImportarPadronPage';
 import { IngresoPage } from './pages/IngresoPage';
 import { InscripcionesPage } from './pages/InscripcionesPage';
@@ -32,6 +33,8 @@ export default function App() {
           en Nuevo torneo: cada categoría se cierra y se sortea aparte (decisión 003). */}
       <Route path="/torneos/:id/inscripciones" element={<InscripcionesPage />} />
       <Route path="/torneos/:id/sorteo" element={<SorteoPage />} />
+      {/* Sin partido, abre el primero que no tiene resultado (decisión 031). */}
+      <Route path="/torneos/:id/resultados/:partidoId?" element={<CargarResultadoPage />} />
     </Routes>
   );
 }

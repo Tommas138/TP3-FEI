@@ -6,6 +6,8 @@ import {
   type DatosResultado,
   type EstadoPartido,
   type PartidoConResultado,
+  type PartidoDeLaLista,
+  type PartidosDelTorneo,
   type SistemaDeJuego,
 } from '@setpoint/shared';
 import { organizacionAdministrada } from '../../lib/permisos';
@@ -40,20 +42,25 @@ const DEL_TORNEO = {
   categoria: { select: { nombre: true } },
 } satisfies Prisma.TorneoSelect;
 
-const DEL_PARTIDO = {
+// Lo que se muestra de un partido en la lista para elegir cuál cargar.
+const DE_LA_LISTA = {
   id: true,
-  torneoId: true,
   fase: true,
   grupo: true,
   cuadro: true,
   ronda: true,
-  jugadorAId: true,
-  jugadorBId: true,
   ganadorId: true,
   estado: true,
-  actualizadoEn: true,
   jugadorA: jugador,
   jugadorB: jugador,
+} satisfies Prisma.PartidoSelect;
+
+const DEL_PARTIDO = {
+  ...DE_LA_LISTA,
+  torneoId: true,
+  jugadorAId: true,
+  jugadorBId: true,
+  actualizadoEn: true,
   sets: {
     select: { gamesA: true, gamesB: true, tieBreakA: true, tieBreakB: true, esSuperTieBreak: true },
     orderBy: { numero: 'asc' },
@@ -87,12 +94,12 @@ const sistemaDeJuego = (torneo: Torneo): SistemaDeJuego => ({
   puntosSuperTieBreak: torneo.puntosSuperTieBreak,
 });
 
-function aPartidoConResultado(torneo: Torneo, partido: Partido): PartidoConResultado {
-  const aJugador = (j: Partido['jugadorA']) => j && { jugadorId: j.id, nombre: j.nombre, apellido: j.apellido };
+const nombreDelTorneo = (torneo: Torneo) => `${torneo.edicion ?? torneo.nombre} · ${torneo.categoria.nombre}`;
+
+function aPartidoDeLaLista(partido: Prisma.PartidoGetPayload<{ select: typeof DE_LA_LISTA }>): PartidoDeLaLista {
+  const aJugador = (j: typeof partido.jugadorA) => j && { jugadorId: j.id, nombre: j.nombre, apellido: j.apellido };
   return {
     id: partido.id,
-    torneoId: partido.torneoId,
-    nombre: `${torneo.edicion ?? torneo.nombre} · ${torneo.categoria.nombre}`,
     fase: partido.fase === FasePartido.GRUPOS ? 'grupos' : 'eliminatoria',
     grupo: partido.grupo,
     cuadro: (partido.cuadro?.toLowerCase() ?? null) as ClaveCuadro | null,
@@ -101,9 +108,41 @@ function aPartidoConResultado(torneo: Torneo, partido: Partido): PartidoConResul
     jugadorB: aJugador(partido.jugadorB),
     estado: partido.estado.toLowerCase() as EstadoPartido,
     ganadorId: partido.ganadorId,
+  };
+}
+
+// Rondas del cuadro del partido: la última es la final. null en la fase de grupos.
+async function rondasDelCuadro(partido: Partido) {
+  if (partido.cuadro === null) return null;
+  const { _max } = await prisma.partido.aggregate({
+    where: { torneoId: partido.torneoId, cuadro: partido.cuadro },
+    _max: { ronda: true },
+  });
+  return _max.ronda;
+}
+
+async function aPartidoConResultado(torneo: Torneo, partido: Partido): Promise<PartidoConResultado> {
+  return {
+    ...aPartidoDeLaLista(partido),
+    torneoId: partido.torneoId,
+    nombre: nombreDelTorneo(torneo),
+    rondas: await rondasDelCuadro(partido),
     sets: partido.sets,
     sistema: sistemaDeJuego(torneo),
   };
+}
+
+// Los partidos del torneo, para elegir cuál cargar (decisión 031). Los enums se ordenan como
+// están declarados: primero las zonas, y Campeonato antes que el cuadro consuelo.
+export async function listarPartidos(slug: string, usuarioId: number, torneoId: number): Promise<PartidosDelTorneo> {
+  const organizacionId = await organizacionAdministrada(slug, usuarioId);
+  const torneo = await torneoDeLaOrganizacion(organizacionId, torneoId);
+  const partidos = await prisma.partido.findMany({
+    where: { torneoId: torneo.id },
+    orderBy: [{ fase: 'asc' }, { grupo: 'asc' }, { cuadro: 'asc' }, { ronda: 'asc' }, { ordenEnRonda: 'asc' }, { id: 'asc' }],
+    select: DE_LA_LISTA,
+  });
+  return { torneoId: torneo.id, nombre: nombreDelTorneo(torneo), partidos: partidos.map(aPartidoDeLaLista) };
 }
 
 // Un partido con su resultado y el sistema de juego del torneo: lo que hace falta para cargarlo o corregirlo.

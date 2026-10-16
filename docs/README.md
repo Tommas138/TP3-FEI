@@ -128,6 +128,7 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~¿Qué pasa al corregir un resultado que ya tuvo efecto?~~ **Se corrige si no cambia lo que ya se armó con él** ([decisión 028](decisiones/028-correccion-de-resultados.md)). En un cuadro, si el ganador es el mismo o el partido siguiente no se jugó; con las zonas cerradas, si la siembra de los cuadros queda igual. Así nunca se borra un partido que se jugó, y se pueden arreglar los errores de tipeo, que casi nunca cambian quién gana
 - ~~¿Cuándo pasa el torneo a grupos en curso?~~ **Al llegar la fecha de inicio**, con una tarea de la API que revisa cada hora ([decisión 029](decisiones/029-grupos-en-curso.md)). Es cuando arranca el plazo de la fase de grupos, y así el estado guardado es el real sin calcularlo en cada consulta
 - ~~¿Son obligatorios los puntos del tie-break?~~ **No: si vienen se validan** ([decisión 030](decisiones/030-puntos-del-tie-break-opcionales.md)). No cambian ninguna tabla, en los mensajes del grupo muchas veces no vienen, y un circuito con tie-break con diferencia de 2 puede cargar su resultado igual
+- ~~¿Por dónde se entra a cargar un resultado, si el tablero todavía no existe?~~ **Desde el Sorteo de zonas confirmado, y el partido se elige dentro de la pantalla** ([decisión 031](decisiones/031-como-se-llega-a-cargar-resultado.md)). Se llega en la demo con un clic, los partidos de cuadro también tienen entrada, y la lista se reemplaza cuando llegue el tablero (F15) sin tocar otra pantalla
 
 ---
 

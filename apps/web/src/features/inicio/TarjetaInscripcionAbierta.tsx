@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { BarraProgreso } from '../../components/BarraProgreso';
 import { Boton } from '../../components/Boton';
 import { Numero } from '../../components/Numero';
@@ -5,6 +6,8 @@ import { Tarjeta } from '../../components/Tarjeta';
 import type { TorneoConInscripcionAbierta } from './torneosEjemplo';
 
 export function TarjetaInscripcionAbierta({ torneo }: { torneo: TorneoConInscripcionAbierta }) {
+  const navegar = useNavigate();
+
   return (
     <Tarjeta className="flex flex-col gap-4 p-5">
       <div className="flex flex-col gap-[5px]">
@@ -22,9 +25,11 @@ export function TarjetaInscripcionAbierta({ torneo }: { torneo: TorneoConInscrip
         <BarraProgreso valor={torneo.pagaron} total={torneo.cupo} color="lima" rotulo="Inscriptos que pagaron" />
       </div>
 
-      {/* Se conectan cuando exista la pantalla de inscripciones. */}
       <div className="flex gap-[9px]">
-        <Boton className="grow">Inscripciones</Boton>
+        <Boton className="grow" onClick={() => navegar(`/torneos/${torneo.id}/inscripciones`)}>
+          Inscripciones
+        </Boton>
+        {/* Se conecta cuando exista el link de inscripción (F12). */}
         <Boton>Copiar link</Boton>
       </div>
     </Tarjeta>

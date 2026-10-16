@@ -74,6 +74,12 @@ La respuesta incluye un token de sesión (JWT), así la organización queda ingr
 
 **Primeros pasos.** *Propuesto, pendiente de código* ([devolucion-25.md](devolucion-25.md), cambio H). El inicio del organizador muestra una tarjeta con tres pasos que se tildan solos al cumplirse: *Importá tus jugadores · Creá tu primer torneo · Compartí el link de inscripción*. Se eligió esto en lugar de un tutorial que resalta pasos en pantalla, que es caro de hacer y la gente lo saltea. El resto de la ayuda va **en contexto**: el texto que explica algo aparece junto a lo que explica, no en una pantalla aparte.
 
+**El inicio con torneos.** Agrupa los torneos por momento: en juego, para sortear, con la inscripción abierta, en borrador y terminados. Desde que se publica, cada categoría tiene su propia tarjeta ([decisión 026](decisiones/026-una-tarjeta-por-categoria-en-el-inicio.md)), porque cierra la inscripción y se sortea por separado; los borradores van uno por convocatoria.
+
+- Las categorías con la inscripción abierta llevan a su pantalla Inscripciones (§7).
+- Las que cerraron y todavía no se sortearon van en "Para sortear", con "Sortear zonas" como acción principal. No van en "Necesita tu atención": ese bloque es rojo, y el rojo solo significa vencimiento.
+- Una categoría con el sorteo confirmado deja de verse hasta que exista el tablero (F15), que es lo que llena "En juego".
+
 Después del alta, y en cualquier momento, se configura:
 
 - Nombre del circuito y datos de contacto
@@ -196,7 +202,7 @@ Funciones:
 
 La lista de espera se ordena **por orden de llegada** y cubre deserciones, replicando la regla actual del reglamento.
 
-**Lo que existe hoy** es una versión mínima, que es el camino al sorteo. La pantalla Inscripciones es de una categoría (`/torneos/:id/inscripciones`, con el id del `Torneo`, no el de la convocatoria): muestra los lugares del cupo (pagados, reservando y libres) y la lista de inscriptos con su estado. Con la inscripción abierta, el botón es "Cerrar inscripciones": el torneo pasa a `inscripciones_cerradas` y el botón pasa a "Sortear zonas", que lleva al sorteo. Cada categoría se cierra aparte, y cerrar no se deshace.
+**Lo que existe hoy** es una versión mínima, que es el camino al sorteo. Se llega desde la tarjeta de la categoría en el inicio (§3). La pantalla Inscripciones es de una categoría (`/torneos/:id/inscripciones`, con el id del `Torneo`, no el de la convocatoria): muestra los lugares del cupo (pagados, reservando y libres) y la lista de inscriptos con su estado. Con la inscripción abierta, el botón es "Cerrar inscripciones": el torneo pasa a `inscripciones_cerradas` y el botón pasa a "Sortear zonas", que lleva al sorteo. Cada categoría se cierra aparte, y cerrar no se deshace.
 
 - **Las reservas sin pagar no se tocan al cerrar** ([decisión 024](decisiones/024-reservas-sin-pagar-al-cerrar.md)): no entran al sorteo, que toma solo las pagadas, y se resuelven cuando exista F13 completa. La pantalla lo avisa antes de cerrar.
 - **No se puede cerrar si los que pagaron no alcanzan para las zonas**, al menos 3 por zona ([decisión 025](decisiones/025-no-se-cierra-sin-inscriptos-para-las-zonas.md)). La pantalla dice cuántos hacen falta y enlaza al torneo para bajar la cantidad de zonas.

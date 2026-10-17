@@ -347,7 +347,14 @@ theme: {
 }
 ```
 
-En React Native / Expo hay que empaquetar las dos fuentes con `expo-font`, porque no hay Google Fonts en tiempo de ejecución.
+### Tokens en React Native
+
+La app tiene su copia de los tokens en `apps/mobile/src/lib/tokens.ts`, con los mismos valores que `apps/web/src/index.css` ([decisión 034](decisiones/034-tokens-de-la-app.md)). Si cambia un valor de este documento, cambia en los dos archivos. Los estilos se escriben con `StyleSheet` y esos tokens ([decisión 035](decisiones/035-estilos-de-la-app.md)).
+
+- **Las fuentes van dentro de la app**, porque en el celular no hay Google Fonts. Salen de los paquetes `@expo-google-fonts/instrument-sans` y `@expo-google-fonts/geist-mono`, se cargan con `useFonts` en `src/app/_layout.tsx` y la splash espera a que estén. Es en tiempo de ejecución y no con el plugin de `expo-font` porque Expo Go no lee el plugin.
+- **El peso se elige con la familia, nunca con `fontWeight`.** En Android cada peso es una fuente aparte: `fontFamily: fuentes.sans[600]`, no `fontWeight: '600'`.
+- **`tabular-nums` se escribe `fontVariant: ['tabular-nums']`**, que en los tokens es `tabular`.
+- **Las medidas de la escala móvil también son tokens** (`medidas.toque` = 56, `medidas.margen` = 16), porque en la app se repiten en cada pantalla.
 
 ### Notas para quien implemente
 

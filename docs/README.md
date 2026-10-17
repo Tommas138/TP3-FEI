@@ -131,6 +131,10 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~¿Por dónde se entra a cargar un resultado, si el tablero todavía no existe?~~ **Desde el Sorteo de zonas confirmado, y el partido se elige dentro de la pantalla** ([decisión 031](decisiones/031-como-se-llega-a-cargar-resultado.md)). Se llega en la demo con un clic, los partidos de cuadro también tienen entrada, y la lista se reemplaza cuando llegue el tablero (F15) sin tocar otra pantalla
 - ~~¿Cómo dice la pantalla qué pasa antes de guardar un resultado?~~ **La API simula el resultado sin guardarlo y devuelve la tabla de la zona** ([decisión 032](decisiones/032-vista-previa-del-resultado.md)). La vista previa sale de la misma cuenta que la tabla real y la cascada no se mueve de la API; en un cuadro alcanza con la ronda y la arma la web
 - ~~¿Dónde se consulta el ranking sin cuenta?~~ **En una página pública de la web, `/c/:slug/ranking`, sobre `GET /api/publico/:slug/ranking`** ([decisión 033](decisiones/033-ranking-publico.md)). F09 pide un enlace que se abra sin instalar nada, y la app todavía no existe; todo lo que no pide login va bajo `/api/publico`. Si la organización no lleva ranking, el enlace lo dice y no muestra tabla
+- ~~¿Cómo comparten los tokens la web y la app?~~ **Cada una tiene su copia**: la app, en `apps/mobile/src/lib/tokens.ts`, con los mismos valores que `index.css` ([decisión 034](decisiones/034-tokens-de-la-app.md)). La fuente de verdad ya es design.md, y para valores que casi no cambian sincronizar a mano cuesta menos que un generador
+- ~~¿Cómo se escriben los estilos en la app?~~ **Con `StyleSheet` y los tokens, sin librería** ([decisión 035](decisiones/035-estilos-de-la-app.md)). NativeWind estable usa Tailwind 3 mientras la web tiene el 4, y Unistyles no corre en Expo Go
+- ~~¿Cómo se genera el APK?~~ **Con EAS en la nube**, perfil `preview` ([decisión 036](decisiones/036-apk-con-eas.md)). No hay que instalar Android Studio, y `eas build --local` no anda en Windows
+- ~~¿Cómo se evita tener dos copias de React con la app en los workspaces?~~ **Con `overrides` en el `package.json` de la raíz**, en la versión que pide Expo ([decisión 037](decisiones/037-una-sola-copia-de-react.md)). Dos copias rompen la app con "Invalid hook call"; la web sube de React cuando sube Expo
 
 ---
 
@@ -193,6 +197,7 @@ Lista para llevar a la próxima charla. Las respondidas se tachan.
 | Los webhooks de MercadoPago necesitan URL pública | ngrok en desarrollo; verificar antes de la demo |
 | Sobreventa de cupos por concurrencia | Reserva con vencimiento + lista de espera |
 | La demo depende de una cuenta de Neon externa | `docker-compose` con Postgres local, autosuficiente |
+| El APK se genera con la cuenta de Expo de un integrante ([decisión 036](decisiones/036-apk-con-eas.md)) | El APK se entrega como archivo y no necesita la cuenta para funcionar. Generarlo con tiempo, porque el plan gratuito tiene cola |
 | El insumo de la extracción de resultados no está confirmado | El desarrollo es el mismo para captura, foto o texto libre. Las otras dos funcionalidades de IA no dependen de esto |
 | La importación del padrón depende de la API de Anthropic, y `docker compose up` no puede depender de cuentas externas | Sin `ANTHROPIC_API_KEY` la API levanta igual y la importación termina en error con el motivo; el alta manual sigue funcionando. Para la demo, la key va en el `.env`. El rate limiting y el tope de gasto de [06](06-ia.md) todavía no están implementados |
 | Exposición de datos de contacto en pantallas públicas | Ninguna vista pública incluye teléfono ni email |

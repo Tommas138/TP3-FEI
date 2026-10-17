@@ -34,9 +34,9 @@ Monorepo con workspaces de npm.
 
 ## Requisitos
 
-- Node.js 20 o superior
+- Node.js 22.13 o superior (lo pide Expo SDK 58)
 - Docker y Docker Compose
-- Para la app móvil: [Expo Go](https://expo.dev/go) en el celular, o un emulador Android
+- Para la app móvil: [Expo Go](https://expo.dev/go) actualizado en el celular (tiene que soportar el SDK 58), o un emulador Android
 
 ---
 
@@ -59,12 +59,22 @@ Los mails que manda la API (por ahora, el link para recuperar la contraseña) no
 
 ### App móvil
 
+La app no se dockeriza: corre en el celular y le habla a la API que corre en la notebook.
+
 ```bash
-cd apps/mobile
-npx expo start
+cp apps/mobile/.env.example apps/mobile/.env   # y poné la IP de la notebook
+npm run dev -w apps/api                        # la API tiene que estar corriendo
+npm run dev -w apps/mobile                     # Metro, con el QR
 ```
 
-Escaneá el QR con Expo Go. Para el APK instalable: `npx eas build -p android --profile preview`.
+1. En `apps/mobile/.env`, `EXPO_PUBLIC_API_URL` es la dirección de la API **vista desde el celular**: `http://<IP de la notebook>:3000`. La IP sale de `ipconfig` ("Dirección IPv4"). `localhost` no sirve: desde el celular es el propio celular. En el emulador de Android va `http://10.0.2.2:3000`.
+2. El celular tiene que estar en la misma Wi-Fi que la notebook. Escaneá el QR con Expo Go. Mientras el Expo Go del Play Store no soporte el SDK 58, instalá el APK que publica Expo: [Expo-Go-58.0.4.apk](https://github.com/expo/expo-go-releases/releases/download/Expo-Go-58.0.4/Expo-Go-58.0.4.apk). Si ya tenías el del Play Store, desinstalalo antes.
+3. Si el celular no llega a la API, revisá que el firewall de Windows deje entrar a Node en redes privadas, y que la Wi-Fi esté marcada como red privada.
+4. La variable se lee al compilar: si la cambiás, reiniciá con `npx expo start --clear` (desde `apps/mobile`).
+
+Por ahora la app tiene una sola pantalla de prueba, que dice si llega a la API.
+
+El APK instalable se genera con EAS ([decisión 036](docs/decisiones/036-apk-con-eas.md)): `npx eas-cli login` y después `npx eas-cli build -p android --profile preview` desde `apps/mobile`.
 
 ---
 
@@ -122,6 +132,7 @@ Detalle completo en [`docs/08-repositorio.md`](docs/08-repositorio.md).
 ## Riesgos
 
 | `npm audit` reporta 3 vulnerabilidades altas en `deepmerge-ts` | Es una dependencia del CLI de Prisma, que solo corre en desarrollo y no procesa datos de usuarios. **No correr `npm audit fix --force`**: baja Prisma a 6.12 y rompe la alineación de versiones. Se resuelve cuando Prisma actualice la dependencia |
+| `npm audit` reporta vulnerabilidades en las herramientas de build de la app (Metro, `braces`, `micromatch`, `node-forge` en el CLI de Expo) | Corren en la máquina de quien desarrolla y no van en el APK. **No correr `npm audit fix --force`**: propone bajar Expo al SDK 44. Se resuelven al actualizar el SDK |
 
 ---
 

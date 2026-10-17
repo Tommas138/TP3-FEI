@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import type { RespuestaSalud } from '@setpoint/shared';
 import { manejarErrores } from './middleware/errores';
 import { authRouter } from './modules/auth/auth.routes';
 import { cuadrosRouter } from './modules/competencia/cuadros.routes';
@@ -20,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/api/salud', (_req, res) => {
-  res.json({ ok: true, servicio: 'setpoint-api' });
+  res.json({ ok: true, servicio: 'setpoint-api' } satisfies RespuestaSalud);
 });
 
 app.use('/api/auth', authRouter);

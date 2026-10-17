@@ -9,5 +9,6 @@ export * from './schemas/inscripciones';
 export * from './schemas/cuadros';
 export * from './schemas/resultado';
 export * from './schemas/ranking';
+export * from './schemas/salud';
 export * from './formato';
 export * from './desempate';

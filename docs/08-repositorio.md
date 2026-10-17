@@ -65,6 +65,7 @@ tp-torneos/
 │   └── mobile/
 │       ├── app.json
 │       ├── eas.json             # perfiles de build para el APK
+│       ├── .env.example         # EXPO_PUBLIC_API_URL: la API vista desde el celular
 │       └── src/
 │           ├── app/             # rutas (expo-router)
 │           ├── features/        # espejo de los módulos de la API

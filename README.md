@@ -59,12 +59,20 @@ Los mails que manda la API (por ahora, el link para recuperar la contraseña) no
 
 ### App móvil
 
+La app no se dockeriza: corre en el celular y le habla a la API que corre en la notebook.
+
 ```bash
-cd apps/mobile
-npx expo start
+cp apps/mobile/.env.example apps/mobile/.env   # y poné la IP de la notebook
+npm run dev -w apps/api                        # la API tiene que estar corriendo
+npm run dev -w apps/mobile                     # Metro, con el QR
 ```
 
-Escaneá el QR con Expo Go. Para el APK instalable: `npx eas build -p android --profile preview`.
+1. En `apps/mobile/.env`, `EXPO_PUBLIC_API_URL` es la dirección de la API **vista desde el celular**: `http://<IP de la notebook>:3000`. La IP sale de `ipconfig` ("Dirección IPv4"). `localhost` no sirve: desde el celular es el propio celular. En el emulador de Android va `http://10.0.2.2:3000`.
+2. El celular tiene que estar en la misma Wi-Fi que la notebook. Escaneá el QR con Expo Go.
+3. Si el celular no llega a la API, revisá que el firewall de Windows deje entrar a Node en redes privadas, y que la Wi-Fi esté marcada como red privada.
+4. La variable se lee al compilar: si la cambiás, reiniciá con `npx expo start --clear` (desde `apps/mobile`).
+
+Por ahora la app tiene una sola pantalla de prueba, que dice si llega a la API.
 
 ---
 

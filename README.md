@@ -68,7 +68,7 @@ npm run dev -w apps/mobile                     # Metro, con el QR
 ```
 
 1. En `apps/mobile/.env`, `EXPO_PUBLIC_API_URL` es la dirección de la API **vista desde el celular**: `http://<IP de la notebook>:3000`. La IP sale de `ipconfig` ("Dirección IPv4"). `localhost` no sirve: desde el celular es el propio celular. En el emulador de Android va `http://10.0.2.2:3000`.
-2. El celular tiene que estar en la misma Wi-Fi que la notebook. Escaneá el QR con Expo Go.
+2. El celular tiene que estar en la misma Wi-Fi que la notebook. Escaneá el QR con Expo Go. Mientras el Expo Go del Play Store no soporte el SDK 58, instalá el APK que publica Expo: [Expo-Go-58.0.4.apk](https://github.com/expo/expo-go-releases/releases/download/Expo-Go-58.0.4/Expo-Go-58.0.4.apk). Si ya tenías el del Play Store, desinstalalo antes.
 3. Si el celular no llega a la API, revisá que el firewall de Windows deje entrar a Node en redes privadas, y que la Wi-Fi esté marcada como red privada.
 4. La variable se lee al compilar: si la cambiás, reiniciá con `npx expo start --clear` (desde `apps/mobile`).
 

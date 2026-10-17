@@ -34,9 +34,9 @@ Monorepo con workspaces de npm.
 
 ## Requisitos
 
-- Node.js 20 o superior
+- Node.js 22.13 o superior (lo pide Expo SDK 58)
 - Docker y Docker Compose
-- Para la app móvil: [Expo Go](https://expo.dev/go) en el celular, o un emulador Android
+- Para la app móvil: [Expo Go](https://expo.dev/go) actualizado en el celular (tiene que soportar el SDK 58), o un emulador Android
 
 ---
 
@@ -122,6 +122,7 @@ Detalle completo en [`docs/08-repositorio.md`](docs/08-repositorio.md).
 ## Riesgos
 
 | `npm audit` reporta 3 vulnerabilidades altas en `deepmerge-ts` | Es una dependencia del CLI de Prisma, que solo corre en desarrollo y no procesa datos de usuarios. **No correr `npm audit fix --force`**: baja Prisma a 6.12 y rompe la alineación de versiones. Se resuelve cuando Prisma actualice la dependencia |
+| `npm audit` reporta vulnerabilidades en las herramientas de build de la app (Metro, `braces`, `micromatch`, `node-forge` en el CLI de Expo) | Corren en la máquina de quien desarrolla y no van en el APK. **No correr `npm audit fix --force`**: propone bajar Expo al SDK 44. Se resuelven al actualizar el SDK |
 
 ---
 

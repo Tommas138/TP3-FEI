@@ -130,6 +130,7 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~¿Son obligatorios los puntos del tie-break?~~ **No: si vienen se validan** ([decisión 030](decisiones/030-puntos-del-tie-break-opcionales.md)). No cambian ninguna tabla, en los mensajes del grupo muchas veces no vienen, y un circuito con tie-break con diferencia de 2 puede cargar su resultado igual
 - ~~¿Por dónde se entra a cargar un resultado, si el tablero todavía no existe?~~ **Desde el Sorteo de zonas confirmado, y el partido se elige dentro de la pantalla** ([decisión 031](decisiones/031-como-se-llega-a-cargar-resultado.md)). Se llega en la demo con un clic, los partidos de cuadro también tienen entrada, y la lista se reemplaza cuando llegue el tablero (F15) sin tocar otra pantalla
 - ~~¿Cómo dice la pantalla qué pasa antes de guardar un resultado?~~ **La API simula el resultado sin guardarlo y devuelve la tabla de la zona** ([decisión 032](decisiones/032-vista-previa-del-resultado.md)). La vista previa sale de la misma cuenta que la tabla real y la cascada no se mueve de la API; en un cuadro alcanza con la ronda y la arma la web
+- ~~¿Dónde se consulta el ranking sin cuenta?~~ **En una página pública de la web, `/c/:slug/ranking`, sobre `GET /api/publico/:slug/ranking`** ([decisión 033](decisiones/033-ranking-publico.md)). F09 pide un enlace que se abra sin instalar nada, y la app todavía no existe; todo lo que no pide login va bajo `/api/publico`. Si la organización no lleva ranking, el enlace lo dice y no muestra tabla
 
 ---
 

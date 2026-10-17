@@ -12,6 +12,7 @@ import { inscripcionesRouter } from './modules/inscripciones/inscripciones.route
 import { jugadoresRouter } from './modules/jugadores/jugadores.routes';
 import { organizacionesRouter } from './modules/organizaciones/organizaciones.routes';
 import { importacionesRouter } from './modules/padron/importacion/importaciones.routes';
+import { rankingPublicoRouter } from './modules/ranking/ranking-publico.routes';
 import { torneosRouter } from './modules/torneos/torneos.routes';
 
 const app = express();
@@ -33,6 +34,8 @@ app.use('/api/organizaciones/:slug/torneos/:id/partidos', resultadosRouter);
 app.use('/api/organizaciones/:slug/torneos', torneosRouter);
 app.use('/api/organizaciones/:slug/importaciones', importacionesRouter);
 app.use('/api/organizaciones', organizacionesRouter);
+// Sin login. Nada de acá devuelve datos de contacto.
+app.use('/api/publico/:slug/ranking', rankingPublicoRouter);
 
 app.use(manejarErrores);
 

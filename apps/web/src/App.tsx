@@ -9,6 +9,7 @@ import { LandingPage } from './pages/LandingPage';
 import { NuevoTorneoPage } from './pages/NuevoTorneoPage';
 import { PadronPage } from './pages/PadronPage';
 import { RecuperarContrasenaPage } from './pages/RecuperarContrasenaPage';
+import { RankingPublicoPage } from './pages/RankingPublicoPage';
 import { RegistroPage } from './pages/RegistroPage';
 import { RestablecerContrasenaPage } from './pages/RestablecerContrasenaPage';
 import { SorteoPage } from './pages/SorteoPage';
@@ -35,6 +36,8 @@ export default function App() {
       <Route path="/torneos/:id/sorteo" element={<SorteoPage />} />
       {/* Sin partido, abre el primero que no tiene resultado (decisión 031). */}
       <Route path="/torneos/:id/resultados/:partidoId?" element={<CargarResultadoPage />} />
+      {/* Pública, sin login: es el enlace que la organización comparte (F09). */}
+      <Route path="/c/:slug/ranking" element={<RankingPublicoPage />} />
     </Routes>
   );
 }

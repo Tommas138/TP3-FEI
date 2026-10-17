@@ -26,7 +26,7 @@ Ordenado por entrega.
 | 50% | F06, F07 | [Cargar resultado](organizador/cargar-resultado.html) | Web organizador | 1280 px |
 | 50% | F07, F11 | [Mi zona](jugador/mi-zona.html) | App jugador | 390 px |
 | 50% | F08, F10 | [Los dos cuadros](publico/cuadros.html) | Web pública | 1860 px |
-| 50% | F09 | [Ranking](jugador/ranking.html) | App jugador | 390 px |
+| 50% | F09 | [Ranking](jugador/ranking.html) | App jugador · por ahora, web pública en `/c/:slug/ranking` ([decisión 033](../decisiones/033-ranking-publico.md)) | 390 px |
 | 50% | F11 | [Cuándo juego](jugador/cuando-juego.html) | App jugador | 390 px |
 | 75% | F02, F12 | [Cuenta e ingreso](jugador/cuenta-e-ingreso.html) | App jugador | 870 px |
 | 75% | F12 | [El torneo](jugador/el-torneo.html) | App jugador | 390 px |

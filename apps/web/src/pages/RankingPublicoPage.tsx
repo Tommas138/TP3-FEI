@@ -51,7 +51,10 @@ function Encabezado({ organizacion }: { organizacion: string }) {
 }
 
 function Ranking({ ranking }: { ranking: RankingPublico }) {
-  const [categoriaId, setCategoriaId] = useState(ranking.categorias[0]?.id);
+  // Abre en la primera categoría que tiene jugadores: una vacía no dice nada a quien llega del enlace.
+  const [categoriaId, setCategoriaId] = useState(
+    (ranking.categorias.find((c) => c.filas.length > 0) ?? ranking.categorias[0])?.id,
+  );
   const [busqueda, setBusqueda] = useState('');
   const categoria = ranking.categorias.find((c) => c.id === categoriaId);
 

@@ -74,6 +74,8 @@ npm run dev -w apps/mobile                     # Metro, con el QR
 
 Por ahora la app tiene una sola pantalla de prueba, que dice si llega a la API.
 
+El APK instalable se genera con EAS ([decisión 036](docs/decisiones/036-apk-con-eas.md)): `npx eas-cli login` y después `npx eas-cli build -p android --profile preview` desde `apps/mobile`.
+
 ---
 
 ## Variables de entorno

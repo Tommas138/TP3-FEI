@@ -31,6 +31,10 @@ export type PartidoDelCuadro = {
   estado: EstadoPartido;
   // 'AAAA-MM-DD'
   fechaLimite: string | null;
+  // Fecha y hora que anotaron los jugadores (F14), en ISO. null mientras no la coordinaron.
+  fechaAcordada: string | null;
+  // El club registrado o la sede escrita a mano. null si todavía no se sabe.
+  sede: string | null;
   // En un super tie-break, gamesA y gamesB son los puntos. Un W.O. no tiene sets (decisión 016);
   // en un abandono, el último puede haber quedado sin terminar (decisión 027).
   sets: { gamesA: number; gamesB: number; esSuperTieBreak: boolean }[];
@@ -46,8 +50,12 @@ export type CuadroEliminatorio = {
 
 export type Cuadros = {
   torneoId: number;
+  // Nombre de la organización, para el encabezado de la página pública.
+  organizacion: string;
   // "Primavera 2026 · Tercera"
   nombre: string;
+  // Los primeros de cada zona que van al cuadro principal; el resto, al consuelo si lo hay.
+  clasificadosPorGrupo: number;
   // Sin cuadro consuelo, o si no le alcanzaron los jugadores, hay uno solo.
   cuadros: CuadroEliminatorio[];
 };

@@ -58,7 +58,7 @@ Desde la devolución del 25% ([../devolucion-25.md](../devolucion-25.md)) la int
 | [Cargar resultado](organizador/cargar-resultado.html) | "va a Complementaria" | Vista previa de la tabla | Actualizado (`vistaPreviaDeLaZona()` en `features/resultados/resultado.ts`) |
 | [Tablero del torneo](organizador/tablero.html) | "Complementaria" | Explicación de la línea de corte | Sin implementar |
 | [Cerrar el torneo](organizador/cierre.html) | "complementaria" | Rótulo de cuadro | Sin implementar |
-| [Los dos cuadros](publico/cuadros.html) | "Complementaria" | Título del segundo cuadro y bajada | Sin implementar |
+| [Los dos cuadros](publico/cuadros.html) | "Complementaria" | Título del segundo cuadro y bajada | Actualizado (`NOMBRE_DEL_CUADRO` y `bajada()` en `features/cuadros/cuadro.ts`), salvo "Campeonato": decisión abierta 16 |
 | [Ficha y cara a cara](publico/ficha-y-cara-a-cara.html) | "Puntos por etapa" | Título de la sección de casilleros | Sin implementar |
 | [Landing](publico/landing.html) | "Campeonato y Complementaria", "cada etapa tiene su casillero" | Bloques de funcionalidades | Actualizado (`LandingPage`) |
 

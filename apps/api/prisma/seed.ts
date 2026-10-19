@@ -36,7 +36,10 @@ import {
   FasePartido,
 } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { ganadorDeLosSets, resultadoDelTorneoSchema, type DatosResultadoEntrada } from '@setpoint/shared';
+import { ganadorDeLosSets, resultadoDelTorneoSchema, type ClaveCuadro, type DatosResultadoEntrada } from '@setpoint/shared';
+import { prisma as prismaDeLaApi } from '../src/lib/prisma';
+import { cerrarZonas } from '../src/modules/competencia/cuadros.service';
+import { guardarResultado } from '../src/modules/competencia/resultados.service';
 import { distribuirEnZonas, generarPartidosDeZona, ordenarSiembra, type Azar } from '../src/modules/competencia/sorteo';
 
 const prisma = new PrismaClient();
@@ -276,6 +279,8 @@ async function main() {
   });
 
   await crearCopaDelLimay(org.id, tercera.id);
+  const organizador = await prisma.usuario.findUniqueOrThrow({ where: { email: 'organizador@polenta.example' } });
+  await crearCopaAltaBarda(org.id, tercera.id, organizador.id);
 
   // --- verificación ---
   // Suma simple: vale porque en el seed hay un solo movimiento por etapa.
@@ -339,22 +344,34 @@ const RESULTADOS_DE_ZONA: (DatosResultadoEntrada & { vuelta?: boolean })[] = [
 // El sistema de juego de POLENTA, que es el valor por defecto de Torneo.
 const SISTEMA_POLENTA = { setsPorPartido: 3, terceroSet: 'super_tiebreak', gamesPorSet: 6, puntosTieBreak: 7, puntosSuperTieBreak: 10 } as const;
 
-// --- un torneo con las zonas en juego y casi todos los resultados cargados (F06, F07, F08) ---
-// Para probar la carga de resultados sin pasar por el sorteo: faltan 3 partidos, uno en cada
-// zona salvo la A. Cargándolos se pueden cerrar las zonas y seguir con los cuadros. Suelto, para
-// no tocar el ranking, pero sembrado con él. Hay un W.O. y un abandono entre los cargados.
-async function crearCopaDelLimay(organizacionId: number, categoriaId: number) {
+type TorneoConZonas = {
+  nombre: string;
+  // Qué jugadores de la categoría entran, en orden de id.
+  desde: number;
+  cantidad: number;
+  cantidadGrupos: number;
+  semilla: number;
+  // Cuántos días hace que empezaron las zonas, que duran 3 semanas.
+  inicioHaceDias: number;
+  // Índices de los partidos que quedan sin jugar, sobre la lista de grupos de cada partido.
+  sinJugar?: (grupos: string[]) => Set<number>;
+};
+
+// Un torneo suelto, para no tocar el ranking pero sembrado con él, con las zonas sorteadas por
+// las funciones reales y sus partidos cargados. Entre los cargados hay un W.O. y un abandono.
+async function crearTorneoConZonas(organizacionId: number, categoriaId: number, opciones: TorneoConZonas) {
+  const { nombre, desde, cantidad, cantidadGrupos, semilla, inicioHaceDias, sinJugar } = opciones;
   const jugadores = await prisma.jugador.findMany({
     where: { organizacionId, categoriaId },
     orderBy: { id: 'asc' },
-    skip: 10,
-    take: 16,
+    skip: desde,
+    take: cantidad,
     include: { movimientos: true },
   });
-  const azar = azarConSemilla(26);
+  const azar = azarConSemilla(semilla);
   // Suma simple, como en la verificación: en el seed hay un solo movimiento por etapa.
   const puntos = jugadores.map((j) => ({ jugadorId: j.id, puntos: j.movimientos.reduce((suma, m) => suma + m.puntos, 0) }));
-  const zonas = distribuirEnZonas(ordenarSiembra(puntos, azar), 4, 'SERPENTINA', azar);
+  const zonas = distribuirEnZonas(ordenarSiembra(puntos, azar), cantidadGrupos, 'SERPENTINA', azar);
   const zonaDe = new Map(zonas.flatMap((z) => z.integrantes.map((i) => [i.jugadorId, { grupo: z.grupo, ...i }])));
 
   const torneo = await prisma.torneo.create({
@@ -362,16 +379,16 @@ async function crearCopaDelLimay(organizacionId: number, categoriaId: number) {
       organizacionId,
       categoriaId,
       etapaId: null,
-      nombre: 'Copa del Limay 2026',
-      edicion: 'Copa del Limay 2026',
+      nombre,
+      edicion: nombre,
       estado: EstadoTorneo.GRUPOS_EN_CURSO,
       sorteoConfirmado: true,
-      cupo: 16,
+      cupo: cantidad,
       precio: 45000,
       modoInscripcion: ModoInscripcion.CERRADA,
-      cantidadGrupos: 4,
-      cierreInscripcion: diasAtras(14),
-      fechaInicio: diasAtras(10),
+      cantidadGrupos,
+      cierreInscripcion: diasAtras(inicioHaceDias + 4),
+      fechaInicio: diasAtras(inicioHaceDias),
       inscripciones: {
         create: jugadores.map((j) => ({
           jugadorId: j.id,
@@ -384,14 +401,13 @@ async function crearCopaDelLimay(organizacionId: number, categoriaId: number) {
     },
   });
 
-  // En cada zona, el último partido queda sin jugar. La A se completa.
   const partidos = generarPartidosDeZona(zonas);
-  const pendientes = new Set(['B', 'C', 'D'].map((grupo) => partidos.map((p) => p.grupo).lastIndexOf(grupo)));
+  const pendientes = sinJugar?.(partidos.map((p) => p.grupo)) ?? new Set<number>();
   // Uno de los cargados es un W.O. y otro, un abandono.
   const walkover = partidos.findIndex((p) => p.grupo === 'B');
   const abandono = partidos.findIndex((p) => p.grupo === 'C');
 
-  const base = { torneoId: torneo.id, fase: FasePartido.GRUPOS, fechaLimite: diasAdelante(11) };
+  const base = { torneoId: torneo.id, fase: FasePartido.GRUPOS, fechaLimite: diasAdelante(21 - inicioHaceDias) };
   for (const [i, { grupo, jugadorAId, jugadorBId }] of partidos.entries()) {
     if (pendientes.has(i)) {
       await prisma.partido.create({ data: { ...base, grupo, jugadorAId, jugadorBId } });
@@ -432,7 +448,69 @@ async function crearCopaDelLimay(organizacionId: number, categoriaId: number) {
     });
   }
 
-  console.log(`Zonas en juego en /torneos/${torneo.id} (Copa del Limay · Tercera): faltan ${pendientes.size} partidos de zona
+  return { torneo, pendientes: pendientes.size };
+}
+
+// --- un torneo con las zonas en juego y casi todos los resultados cargados (F06, F07, F08) ---
+// Para probar la carga de resultados sin pasar por el sorteo: faltan 3 partidos, uno en cada
+// zona salvo la A. Cargándolos se pueden cerrar las zonas y seguir con los cuadros.
+async function crearCopaDelLimay(organizacionId: number, categoriaId: number) {
+  const { torneo, pendientes } = await crearTorneoConZonas(organizacionId, categoriaId, {
+    nombre: 'Copa del Limay 2026',
+    desde: 10,
+    cantidad: 16,
+    cantidadGrupos: 4,
+    semilla: 26,
+    inicioHaceDias: 10,
+    // En cada zona, el último partido queda sin jugar. La A se completa.
+    sinJugar: (grupos) => new Set(['B', 'C', 'D'].map((grupo) => grupos.lastIndexOf(grupo))),
+  });
+
+  console.log(`Zonas en juego en /torneos/${torneo.id} (Copa del Limay · Tercera): faltan ${pendientes} partidos de zona
+`);
+}
+
+// --- un torneo con los cuadros en juego (F08, F10) ---
+// 12 jugadores en 3 zonas de 4: cada cuadro tiene 6 y los dos mejores sembrados pasan con bye.
+// Las zonas se cierran y los resultados de cuadro se cargan con los servicios de la API, así el
+// avance del ganador es el real. El principal tiene la final por jugarse, con fecha y sede; el
+// consuelo, una semifinal pendiente.
+async function crearCopaAltaBarda(organizacionId: number, categoriaId: number, usuarioId: number) {
+  const { torneo } = await crearTorneoConZonas(organizacionId, categoriaId, {
+    nombre: 'Copa Alta Barda 2026',
+    desde: 0,
+    cantidad: 12,
+    cantidadGrupos: 3,
+    semilla: 8,
+    inicioHaceDias: 24,
+  });
+
+  const { cuadros } = await cerrarZonas('polenta', usuarioId, torneo.id);
+  const partidosDe = (cuadro: ClaveCuadro, ronda: number) =>
+    cuadros.find((c) => c.cuadro === cuadro)!.partidos.filter((p) => p.ronda === ronda);
+  // La segunda semifinal del consuelo queda sin jugar.
+  const aJugar = [
+    ...partidosDe('campeonato', 1),
+    ...partidosDe('campeonato', 2),
+    ...partidosDe('complementaria', 1),
+    partidosDe('complementaria', 2)[0],
+  ];
+
+  for (const [i, partido] of aJugar.entries()) {
+    // En un cuadro no hay mejor sembrado de qué lado ponerse: `vuelta` no importa y el schema la descarta.
+    const datos = resultadoDelTorneoSchema(SISTEMA_POLENTA).parse(RESULTADOS_DE_ZONA[i % RESULTADOS_DE_ZONA.length]);
+    await guardarResultado('polenta', usuarioId, torneo.id, partido.id, datos);
+  }
+
+  // La coordinación (F14) todavía no existe: la fecha y la sede de la final se anotan acá.
+  const fechaFinal = diasAdelante(5);
+  fechaFinal.setHours(11, 0, 0, 0);
+  await prisma.partido.update({
+    where: { id: partidosDe('campeonato', 3)[0].id },
+    data: { estado: EstadoPartido.CONFIRMADA, fechaAcordada: fechaFinal, sedeTexto: 'Club Alta Barda' },
+  });
+
+  console.log(`Cuadros en juego en /c/polenta/torneos/${torneo.id}/cuadros (Copa Alta Barda · Tercera)
 `);
 }
 
@@ -496,4 +574,5 @@ main()
     console.error(e);
     process.exit(1);
   })
-  .finally(() => prisma.$disconnect());
+  // Los servicios de la API que usa el seed abren su propio cliente.
+  .finally(() => Promise.all([prisma.$disconnect(), prismaDeLaApi.$disconnect()]));

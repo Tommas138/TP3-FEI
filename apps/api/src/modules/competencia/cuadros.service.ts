@@ -120,7 +120,18 @@ const jugadorDelCuadro = { select: { id: true, nombre: true, apellido: true } } 
 
 // Los cuadros de un torneo, para quien administra la organización (decisión 019).
 export async function obtenerCuadros(slug: string, usuarioId: number, torneoId: number): Promise<Cuadros> {
-  const organizacionId = await organizacionAdministrada(slug, usuarioId);
+  return cuadrosDelTorneo(await organizacionAdministrada(slug, usuarioId), torneoId);
+}
+
+// Los mismos cuadros, sin login: es la página que la organización comparte (F10, decisión 033).
+// Solo nombre y apellido de cada jugador, nunca datos de contacto.
+export async function cuadrosPublicos(slug: string, torneoId: number): Promise<Cuadros> {
+  const organizacion = await prisma.organizacion.findUnique({ where: { slug }, select: { id: true } });
+  if (!organizacion) throw new ErrorHttp(404, 'ORGANIZACION_NO_ENCONTRADA');
+  return cuadrosDelTorneo(organizacion.id, torneoId);
+}
+
+async function cuadrosDelTorneo(organizacionId: number, torneoId: number): Promise<Cuadros> {
   if (!Number.isInteger(torneoId)) throw new ErrorHttp(404, 'TORNEO_NO_ENCONTRADO');
 
   const torneo = await prisma.torneo.findFirst({
@@ -130,6 +141,8 @@ export async function obtenerCuadros(slug: string, usuarioId: number, torneoId: 
       nombre: true,
       edicion: true,
       gruposCerrados: true,
+      clasificanPorGrupo: true,
+      organizacion: { select: { nombre: true } },
       categoria: { select: { nombre: true } },
       partidos: {
         where: { fase: FasePartido.ELIMINATORIA },
@@ -142,6 +155,9 @@ export async function obtenerCuadros(slug: string, usuarioId: number, torneoId: 
           ganadorId: true,
           estado: true,
           fechaLimite: true,
+          fechaAcordada: true,
+          sedeTexto: true,
+          club: { select: { nombre: true } },
           jugadorA: jugadorDelCuadro,
           jugadorB: jugadorDelCuadro,
           sets: { select: { gamesA: true, gamesB: true, esSuperTieBreak: true }, orderBy: { numero: 'asc' } },
@@ -170,13 +186,17 @@ export async function obtenerCuadros(slug: string, usuarioId: number, torneoId: 
         ganadorId: p.ganadorId,
         estado: p.estado.toLowerCase() as EstadoPartido,
         fechaLimite: p.fechaLimite?.toISOString().slice(0, 10) ?? null,
+        fechaAcordada: p.fechaAcordada?.toISOString() ?? null,
+        sede: p.club?.nombre ?? p.sedeTexto,
         sets: p.sets,
       })),
     }));
 
   return {
     torneoId: torneo.id,
+    organizacion: torneo.organizacion.nombre,
     nombre: `${torneo.edicion ?? torneo.nombre} · ${torneo.categoria.nombre}`,
+    clasificadosPorGrupo: torneo.clasificanPorGrupo,
     cuadros,
   };
 }

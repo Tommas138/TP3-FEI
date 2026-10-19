@@ -4,6 +4,7 @@ import cors from 'cors';
 import type { RespuestaSalud } from '@setpoint/shared';
 import { manejarErrores } from './middleware/errores';
 import { authRouter } from './modules/auth/auth.routes';
+import { cuadrosPublicoRouter } from './modules/competencia/cuadros-publico.routes';
 import { cuadrosRouter } from './modules/competencia/cuadros.routes';
 import { programarInicioDeGrupos } from './modules/competencia/inicio-de-grupos';
 import { posicionesRouter } from './modules/competencia/posiciones.routes';
@@ -37,6 +38,7 @@ app.use('/api/organizaciones/:slug/importaciones', importacionesRouter);
 app.use('/api/organizaciones', organizacionesRouter);
 // Sin login. Nada de acá devuelve datos de contacto.
 app.use('/api/publico/:slug/ranking', rankingPublicoRouter);
+app.use('/api/publico/:slug/torneos/:id/cuadros', cuadrosPublicoRouter);
 
 app.use(manejarErrores);
 

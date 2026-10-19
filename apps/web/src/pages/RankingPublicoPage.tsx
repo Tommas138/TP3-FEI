@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Campo } from '../components/Campo';
 import { Chip } from '../components/Chip';
+import { EncabezadoPublico } from '../components/EncabezadoPublico';
 import { Numero } from '../components/Numero';
 import { TablaRanking } from '../features/ranking/TablaRanking';
 import { useRankingPublico } from '../features/ranking/useRankingPublico';
@@ -26,7 +27,7 @@ export function RankingPublicoPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-[480px] flex-col gap-[18px] px-4 pt-5 pb-7">
-      {ranking.data && <Encabezado organizacion={ranking.data.organizacion} />}
+      {ranking.data && <EncabezadoPublico organizacion={ranking.data.organizacion} />}
       {ranking.isPending && <p className="text-[15px] text-gris-500">Cargando el ranking…</p>}
       {ranking.error && <p className="text-[15px] text-gris-700">{mensajeDeError(ranking.error)}</p>}
       {ranking.data &&
@@ -36,17 +37,6 @@ export function RankingPublicoPage() {
           <p className="text-[15px] text-gris-700">Este circuito no lleva ranking.</p>
         ))}
     </main>
-  );
-}
-
-function Encabezado({ organizacion }: { organizacion: string }) {
-  return (
-    <div className="flex items-center gap-[9px]">
-      <div className="flex size-[26px] items-center justify-center rounded-[7px] bg-negro">
-        <div className="size-[9px] rounded-full bg-lima" />
-      </div>
-      <span className="text-base font-semibold tracking-[-0.015em]">{organizacion}</span>
-    </div>
   );
 }
 

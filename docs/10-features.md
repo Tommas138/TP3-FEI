@@ -184,7 +184,12 @@ Al terminar la fase de grupos, el sistema armará automáticamente los cuadros e
 
 **Entrega: 50%**
 
-**Estado:** implementada en la API. La organización cierra las zonas (`POST .../torneos/:id/cuadros`) y en ese momento se arman los dos cuadros completos ([decisión 026](decisiones/026-cierre-de-zonas.md)). Dónde va cada uno sale de una siembra única de los clasificados ([decisión 022](decisiones/022-ubicacion-en-el-cuadro.md)), y los byes no generan partido ([decisión 023](decisiones/023-byes-sin-partido.md)). `GET .../torneos/:id/cuadros` los devuelve, por ahora solo a la organización ([decisión 019](decisiones/019-acceso-a-las-posiciones.md)). El ganador avanza al cargarse cada resultado de cuadro (F06), con `avanzarGanador()`. Faltan la pantalla *Los dos cuadros* (con F10) y el nombre configurable del cuadro consuelo.
+**Estado:** implementada, salvo el nombre configurable del cuadro consuelo y el botón para cerrar las zonas.
+- La organización cierra las zonas (`POST .../torneos/:id/cuadros`) y en ese momento se arman los dos cuadros completos ([decisión 026](decisiones/026-cierre-de-zonas.md)). Dónde va cada uno sale de una siembra única de los clasificados ([decisión 022](decisiones/022-ubicacion-en-el-cuadro.md)), y los byes no generan partido ([decisión 023](decisiones/023-byes-sin-partido.md)). El ganador avanza al cargarse cada resultado de cuadro (F06), con `avanzarGanador()`.
+- `GET .../torneos/:id/cuadros` los devuelve a la organización, y `GET /api/publico/:slug/torneos/:id/cuadros`, a cualquiera ([decisión 019](decisiones/019-acceso-a-las-posiciones.md), [decisión 033](decisiones/033-ranking-publico.md)).
+- La pantalla *Los dos cuadros* es pública, en `/c/:slug/torneos/:id/cuadros` (`CuadrosPublicoPage`). En escritorio muestra los cuadros completos; en el celular, una ronda a la vez ([decisión 038](decisiones/038-cuadros-en-el-celular.md)).
+- El segundo cuadro dice "Cuadro consuelo" fijo hasta que exista el nombre configurable ([07](07-configurabilidad.md) §1.2).
+- Ninguna pantalla cierra las zonas todavía: se hace por la API. El lugar natural es el tablero (F15).
 
 ---
 
@@ -214,6 +219,8 @@ Cualquier persona podrá seguir el desarrollo de un torneo desde un enlace, sin 
 - Ninguna pantalla pública muestra datos de contacto de los jugadores.
 
 **Entrega: 50%**
+
+**Estado:** en curso. Los cuadros ya se consultan sin cuenta, en la pantalla *Los dos cuadros* (ver F08), con un botón para compartir el enlace. Faltan las tablas de zona y el calendario de partidos.
 
 ---
 

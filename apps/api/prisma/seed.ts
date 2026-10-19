@@ -17,6 +17,7 @@
 //
 // Cuentas de prueba (contraseña de las dos organizaciones: CONTRASENA_ORGANIZADOR):
 //   organizador@polenta.example · organizador@valle.example
+// Cuenta de jugador para la app, con perfil en los dos circuitos: EMAIL_JUGADOR / CONTRASENA_JUGADOR.
 //
 // Uso:
 //   npm run db:seed -w apps/api          -> carga los datos
@@ -45,6 +46,8 @@ import { distribuirEnZonas, generarPartidosDeZona, ordenarSiembra, type Azar } f
 const prisma = new PrismaClient();
 
 const CONTRASENA_ORGANIZADOR = 'organizador-de-prueba';
+const EMAIL_JUGADOR = 'martin.sanhueza@example.com';
+const CONTRASENA_JUGADOR = 'jugador-de-prueba';
 
 const DIA = 24 * 60 * 60 * 1000;
 const diasAtras = (n: number) => new Date(Date.now() - n * DIA);
@@ -218,8 +221,8 @@ async function main() {
   });
   await prisma.usuario.create({
     data: {
-      email: 'martin.sanhueza@example.com',
-      passwordHash: bcrypt.hashSync('jugador-de-prueba', 10),
+      email: EMAIL_JUGADOR,
+      passwordHash: bcrypt.hashSync(CONTRASENA_JUGADOR, 10),
       nombre: 'Martín',
       apellido: 'Sanhueza',
       jugadores: { connect: { id: sanhueza.id } },
@@ -315,7 +318,9 @@ async function main() {
   await crearLigaDelValle();
 
   console.log(`Cuentas de organizador (contraseña "${CONTRASENA_ORGANIZADOR}"):`);
-  console.log('  organizador@polenta.example · organizador@valle.example\n');
+  console.log('  organizador@polenta.example · organizador@valle.example');
+  console.log(`Cuenta de jugador para la app, en los dos circuitos (contraseña "${CONTRASENA_JUGADOR}"):`);
+  console.log(`  ${EMAIL_JUGADOR}\n`);
 }
 
 // Generador determinista (mulberry32), con el contrato de Math.random: así el sorteo del seed
@@ -545,6 +550,19 @@ async function crearLigaDelValle() {
     })),
   });
 
+  // El jugador de la cuenta de prueba también juega acá, con la misma cuenta: así se prueba
+  // elegir el circuito en la app (decisión 040).
+  const cuentaJugador = await prisma.usuario.findUniqueOrThrow({ where: { email: EMAIL_JUGADOR } });
+  await prisma.jugador.create({
+    data: {
+      organizacionId: liga.id,
+      categoriaId: intermedia.id,
+      nombre: 'Martín',
+      apellido: 'Sanhueza',
+      usuarioId: cuentaJugador.id,
+    },
+  });
+
   // Torneo suelto: sin etapa, así que no otorga puntos.
   await prisma.torneo.create({
     data: {
@@ -566,7 +584,7 @@ async function crearLigaDelValle() {
   });
 
   console.log(`Organización: ${liga.nombre} (sin ranking, inscripción abierta, sin cuadro consuelo)`);
-  console.log(`Jugadores de Intermedia: ${VALLE_INTERMEDIA.length}\n`);
+  console.log(`Jugadores de Intermedia: ${VALLE_INTERMEDIA.length + 1}\n`);
 }
 
 main()

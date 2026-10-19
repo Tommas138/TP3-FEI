@@ -33,7 +33,8 @@ export const respuestaRegistroSchema = z.object({
 
 export type RespuestaRegistro = z.infer<typeof respuestaRegistroSchema>;
 
-// Ingreso de quien administra una organización. Responde con la misma forma que el registro.
+// Email y contraseña. Lo usan los dos ingresos: el de la web, que responde con la misma forma que
+// el registro, y el del jugador en la app (respuestaIngresoJugadorSchema).
 export const ingresoSchema = z.object(
   {
     email: z
@@ -47,6 +48,30 @@ export const ingresoSchema = z.object(
 );
 
 export type DatosIngreso = z.infer<typeof ingresoSchema>;
+
+// Un circuito en el que juega quien ingresa desde la app, con su perfil del padrón. Sin datos de
+// contacto: es lo que queda guardado en el celular.
+export const perfilDeJugadorSchema = z.object({
+  jugador: z.object({
+    id: z.number(),
+    nombre: z.string(),
+    apellido: z.string(),
+    categoria: z.object({ id: z.number(), nombre: z.string() }).nullable(),
+  }),
+  organizacion: z.object({ id: z.number(), nombre: z.string(), slug: z.string() }),
+});
+
+export type PerfilDeJugador = z.infer<typeof perfilDeJugadorSchema>;
+
+// Ingreso del jugador en la app (decisión 039): un perfil por circuito en el que juega, del más
+// viejo al más nuevo. Si hay más de uno, elige el jugador (decisión 040).
+export const respuestaIngresoJugadorSchema = z.object({
+  token: z.string(),
+  usuario: z.object({ id: z.number(), email: z.string(), nombre: z.string() }),
+  perfiles: z.array(perfilDeJugadorSchema).min(1),
+});
+
+export type RespuestaIngresoJugador = z.infer<typeof respuestaIngresoJugadorSchema>;
 
 // Pedido del link para elegir una contraseña nueva.
 export const recuperarContrasenaSchema = z.object(

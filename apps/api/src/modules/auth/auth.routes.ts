@@ -6,7 +6,13 @@ import {
   restablecerContrasenaSchema,
 } from '@setpoint/shared';
 import { validar } from '../../middleware/validar';
-import { ingresar, pedirRecuperacion, registrarOrganizacion, restablecerContrasena } from './auth.service';
+import {
+  ingresar,
+  ingresarJugador,
+  pedirRecuperacion,
+  registrarOrganizacion,
+  restablecerContrasena,
+} from './auth.service';
 
 export const authRouter = Router();
 
@@ -17,6 +23,11 @@ authRouter.post('/registro', validar(registroOrganizacionSchema), async (req, re
 
 authRouter.post('/ingreso', validar(ingresoSchema), async (req, res) => {
   res.json(await ingresar(req.body));
+});
+
+// El de la app: quien juega, no quien administra (decisión 039).
+authRouter.post('/ingreso-jugador', validar(ingresoSchema), async (req, res) => {
+  res.json(await ingresarJugador(req.body));
 });
 
 // Manda el link para elegir una contraseña nueva. Responde igual exista o no la cuenta.

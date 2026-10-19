@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import { Catalogo } from './Catalogo';
 import { CargarResultadoPage } from './pages/CargarResultadoPage';
+import { CuadrosPublicoPage } from './pages/CuadrosPublicoPage';
 import { ImportarPadronPage } from './pages/ImportarPadronPage';
 import { IngresoPage } from './pages/IngresoPage';
 import { InscripcionesPage } from './pages/InscripcionesPage';
@@ -38,6 +39,8 @@ export default function App() {
       <Route path="/torneos/:id/resultados/:partidoId?" element={<CargarResultadoPage />} />
       {/* Pública, sin login: es el enlace que la organización comparte (F09). */}
       <Route path="/c/:slug/ranking" element={<RankingPublicoPage />} />
+      {/* Pública, sin login: los cuadros de un torneo (una categoría), para compartir (F08, F10). */}
+      <Route path="/c/:slug/torneos/:id/cuadros" element={<CuadrosPublicoPage />} />
     </Routes>
   );
 }

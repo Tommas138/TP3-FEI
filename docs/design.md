@@ -96,9 +96,9 @@ El mono es lo que da el acabado de producto y lo que hace que las tablas queden 
 | Cuerpo | 16–17 | 400 | — |
 | Rótulo | 15 | 500 | — |
 | Mono grande (puntos, marcador) | 24–52 | 500 | −0.02 a −0.04em |
-| Mono chico (fecha, zona) | 12–14 | 400/500 | — |
+| Mono chico (fecha, zona, rótulo de casillero) | 15 | 400/500 | — |
 
-**Piso duro: 15px.** Ningún texto baja de ahí en móvil, y los datos van de 17 para arriba.
+**Piso duro: 15px.** Ningún texto baja de ahí en móvil, y los datos van de 17 para arriba. Las pantallas de referencia del jugador tienen rótulos de 10 a 14: al implementarlas suben a 15. Si algo no entra, se reorganiza, como los casilleros del ranking, que van sin el año.
 
 ### Escala escritorio (1280)
 

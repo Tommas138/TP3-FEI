@@ -70,9 +70,12 @@ npm run dev -w apps/mobile                     # Metro, con el QR
 1. En `apps/mobile/.env`, `EXPO_PUBLIC_API_URL` es la dirección de la API **vista desde el celular**: `http://<IP de la notebook>:3000`. La IP sale de `ipconfig` ("Dirección IPv4"). `localhost` no sirve: desde el celular es el propio celular. En el emulador de Android va `http://10.0.2.2:3000`.
 2. El celular tiene que estar en la misma Wi-Fi que la notebook. Escaneá el QR con Expo Go. Mientras el Expo Go del Play Store no soporte el SDK 58, instalá el APK que publica Expo: [Expo-Go-58.0.4.apk](https://github.com/expo/expo-go-releases/releases/download/Expo-Go-58.0.4/Expo-Go-58.0.4.apk). Si ya tenías el del Play Store, desinstalalo antes.
 3. Si el celular no llega a la API, revisá que el firewall de Windows deje entrar a Node en redes privadas, y que la Wi-Fi esté marcada como red privada.
-4. La variable se lee al compilar: si la cambiás, reiniciá con `npx expo start --clear` (desde `apps/mobile`).
+4. La variable se lee al compilar: si la cambiás, reiniciá con `npx expo start --clear` (desde `apps/mobile`). La IP de la notebook puede cambiar de un día para el otro: si la app no conecta, revisala primero.
+5. Ingresá con la cuenta de jugador del seed: `martin.sanhueza@example.com`, contraseña `jugador-de-prueba`. Juega en los dos circuitos del seed, así que la app pregunta en cuál entrar.
 
-Por ahora la app tiene una sola pantalla de prueba, que dice si llega a la API.
+Por ahora, después de ingresar hay un inicio provisorio que dice con quién y en qué circuito entraste.
+
+Si `npm run typecheck -w apps/mobile` dice que una ruta no existe, corré `npx expo start` una vez desde `apps/mobile`: las rutas tipadas se regeneran al arrancar Metro.
 
 El APK instalable se genera con EAS ([decisión 036](docs/decisiones/036-apk-con-eas.md)): `npx eas-cli login` y después `npx eas-cli build -p android --profile preview` desde `apps/mobile`.
 

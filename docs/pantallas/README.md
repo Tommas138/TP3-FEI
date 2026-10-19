@@ -28,7 +28,7 @@ Ordenado por entrega.
 | 50% | F08, F10 | [Los dos cuadros](publico/cuadros.html) | Web pública | 1860 px |
 | 50% | F09 | [Ranking](jugador/ranking.html) | App jugador · por ahora, web pública en `/c/:slug/ranking` ([decisión 033](../decisiones/033-ranking-publico.md)) | 390 px |
 | 50% | F11 | [Cuándo juego](jugador/cuando-juego.html) | App jugador | 390 px |
-| 75% | F02, F12 | [Cuenta e ingreso](jugador/cuenta-e-ingreso.html) | App jugador | 870 px |
+| 50% · 75% | F02, F12 | [Cuenta e ingreso](jugador/cuenta-e-ingreso.html) | App jugador · el ingreso (panel derecho) está hecho para el 50%; crear la cuenta llega con F12 | 870 px |
 | 75% | F12 | [El torneo](jugador/el-torneo.html) | App jugador | 390 px |
 | 75% | F12 | [Inscripción y pago](jugador/inscripcion-y-pago.html) | App jugador | 1290 px |
 | 75% | F13 | [Inscripciones](organizador/inscripciones.html) | Web organizador | 1280 px |
@@ -40,6 +40,8 @@ Ordenado por entrega.
 | — | — | [Landing](publico/landing.html) | Web pública | 1280 px |
 
 Sin pantalla: **F19** (resultados desde mensajes), condicionada al tiempo y a confirmar con el profesor.
+
+Implementada sin referencia: **Tus circuitos**, en la app (`apps/mobile/src/app/circuitos.tsx`). Es la elección del circuito al entrar, si el jugador juega en varios, y el menú que abre el nombre del circuito en el encabezado, con "Cerrar sesión" ([decisión 040](../decisiones/040-jugador-en-varios-circuitos.md)). Está armada con los componentes de [design.md](../design.md).
 
 > Los anchos son los del diseño: 390 es un celular, 1280 un escritorio. Las pantallas del organizador tienen que funcionar también en una notebook de 1024; las del jugador, en cualquier celular.
 

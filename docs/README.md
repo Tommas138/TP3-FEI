@@ -136,6 +136,10 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~¿Cómo se genera el APK?~~ **Con EAS en la nube**, perfil `preview` ([decisión 036](decisiones/036-apk-con-eas.md)). No hay que instalar Android Studio, y `eas build --local` no anda en Windows
 - ~~¿Cómo se evita tener dos copias de React con la app en los workspaces?~~ **Con `overrides` en el `package.json` de la raíz**, en la versión que pide Expo ([decisión 037](decisiones/037-una-sola-copia-de-react.md)). Dos copias rompen la app con "Invalid hook call"; la web sube de React cuando sube Expo
 - ~~¿Cómo se ven los cuadros en el celular, si no entran a lo ancho?~~ **Una ronda a la vez, y abre en la que se está jugando; desde 1280 px, los cuadros completos** ([decisión 038](decisiones/038-cuadros-en-el-celular.md)). design.md no permite scroll horizontal en el celular, achicar las tarjetas las deja sin área táctil, y lo que se busca al abrir el enlace es la ronda en curso
+- ~~¿Cómo ingresa el jugador a la app?~~ **Por un endpoint propio, `POST /api/auth/ingreso-jugador`, que devuelve sus perfiles de jugador** ([decisión 039](decisiones/039-ingreso-del-jugador.md)). La web no cambia, y quien administra y juega entra como administrador en la web y como jugador en la app, con la misma cuenta
+- ~~Si el jugador está en varios circuitos, ¿en cuál entra?~~ **Elige al entrar, la app lo recuerda, y cambia tocando el nombre del circuito en el encabezado**, donde también está "Cerrar sesión" ([decisión 040](decisiones/040-jugador-en-varios-circuitos.md)). Jugar en dos circuitos es un caso real de la plataforma (F02); los administradores siguen con la decisión 002
+- ~~¿Dónde guarda el celular la sesión?~~ **En `expo-secure-store`, cifrada con el Keystore de Android** ([decisión 041](decisiones/041-sesion-en-el-celular.md)). El token permite actuar en nombre del jugador y cifrarlo cuesta lo mismo
+- ~~¿Qué muestra la app sin sesión?~~ **Solo el ingreso** ([decisión 042](decisiones/042-la-app-sin-sesion.md)). La consulta sin cuenta ya está en la web, y sin sesión la app no sabe de qué organización mostrar algo
 
 ---
 

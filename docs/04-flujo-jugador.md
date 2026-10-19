@@ -60,6 +60,17 @@ La organización **ve y puede revertir** las vinculaciones desde su panel. En un
 
 > **Estado:** el lado de la organización ya está: el padrón marca los perfiles con cuenta y permite desvincularlos (`DELETE /jugadores/:id/cuenta`). La creación de la cuenta y la elección del perfil llegan con F12 ([decisión 007](decisiones/007-vinculacion-de-cuentas-en-f02.md)).
 
+### 4.1 Ingreso a la app
+
+Quien ya tiene cuenta entra a la app con su email y su contraseña, por `POST /api/auth/ingreso-jugador`, distinto del ingreso de la web ([decisión 039](decisiones/039-ingreso-del-jugador.md)). La misma cuenta puede administrar una organización desde la web y jugar desde la app.
+
+- **Un perfil por circuito.** Si juega en varios, elige en cuál entrar y la app lo recuerda. Para cambiar, toca el nombre del circuito en el encabezado, donde también está "Cerrar sesión" ([decisión 040](decisiones/040-jugador-en-varios-circuitos.md)).
+- **La sesión queda guardada en el celular**, cifrada, y dura 7 días como en la web ([decisión 041](decisiones/041-sesion-en-el-celular.md)).
+- **Sin sesión, la app solo muestra el ingreso.** La consulta sin cuenta es la de la web, por link ([decisión 042](decisiones/042-la-app-sin-sesion.md)).
+- **Quien solo administra** recibe un aviso para entrar por la web.
+
+> **Estado:** implementado en la app para el 50%, con la cuenta de prueba del seed. Recuperar la contraseña desde la app todavía no: el link del mail abre la web.
+
 > **Descartado:** verificación por SMS y flujo de reclamo de perfiles. Resolvían un riesgo bajo en los circuitos amateur, donde los jugadores se conocen (POLENTA: 77 personas), y la revisión de la organización ya cubre el caso raro.
 
 ---

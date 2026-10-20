@@ -8,8 +8,9 @@ export type PartidosAgrupados = {
   sinCoordinar: PartidoDelJugador[];
   // Lo demás: los que tienen fecha después del próximo y los jugados, más reciente arriba.
   resto: PartidoDelJugador[];
-  // Los que tienen rival: de un cuadro que todavía no se definió no se sabe contra quién.
-  conRival: number;
+  // Los que faltan jugar y tienen rival: de un cuadro que todavía no se definió no se sabe
+  // contra quién. Es el total de "te falta coordinar 3 de 4".
+  porJugar: number;
 };
 
 const porFecha = (campo: 'fechaAcordada' | 'fechaLimite') => (a: PartidoDelJugador, b: PartidoDelJugador) =>
@@ -33,7 +34,7 @@ export function agruparPartidos(partidos: PartidoDelJugador[], ahora = new Date(
     proximo: agendados[0] ?? null,
     sinCoordinar: porJugar.filter((p) => p.fechaAcordada === null).sort(porFecha('fechaLimite')),
     resto: [...agendados.slice(1), ...pasados, ...jugados],
-    conRival: conRival.length,
+    porJugar: porJugar.length,
   };
 }
 

@@ -49,8 +49,11 @@ const estilos = StyleSheet.create({
     paddingBottom: 20,
     gap: 18,
   },
+  // Con dos torneos en juego la instancia lleva el nombre del torneo y no entra al lado del
+  // rótulo: baja a la línea siguiente.
   arriba: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
@@ -61,6 +64,7 @@ const estilos = StyleSheet.create({
     color: colores.gris400,
   },
   instancia: {
+    flexShrink: 1,
     paddingVertical: 5,
     paddingHorizontal: 9,
     borderWidth: 1,

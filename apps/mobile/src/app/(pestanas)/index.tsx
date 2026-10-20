@@ -54,7 +54,7 @@ export default function CuandoJuego() {
 }
 
 function Contenido({ datos }: { datos: MisPartidos }) {
-  const { proximo, sinCoordinar, resto, conRival } = agruparPartidos(datos.partidos);
+  const { proximo, sinCoordinar, resto, porJugar } = agruparPartidos(datos.partidos);
 
   return (
     <>
@@ -69,7 +69,7 @@ function Contenido({ datos }: { datos: MisPartidos }) {
           <View style={estilos.subtitulo}>
             <Text style={estilos.textoSubtitulo}>Te falta coordinar</Text>
             <Text style={estilos.cantidad}>
-              {sinCoordinar.length} de {conRival}
+              {sinCoordinar.length} de {porJugar}
             </Text>
           </View>
           {sinCoordinar.map((p, i) => (

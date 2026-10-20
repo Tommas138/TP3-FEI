@@ -11,6 +11,7 @@ import { posicionesRouter } from './modules/competencia/posiciones.routes';
 import { resultadosRouter } from './modules/competencia/resultados.routes';
 import { sorteoRouter } from './modules/competencia/sorteo.routes';
 import { inscripcionesRouter } from './modules/inscripciones/inscripciones.routes';
+import { jugadorRouter } from './modules/jugador/jugador.routes';
 import { jugadoresRouter } from './modules/jugadores/jugadores.routes';
 import { organizacionesRouter } from './modules/organizaciones/organizaciones.routes';
 import { importacionesRouter } from './modules/padron/importacion/importaciones.routes';
@@ -39,6 +40,8 @@ app.use('/api/organizaciones', organizacionesRouter);
 // Sin login. Nada de acá devuelve datos de contacto.
 app.use('/api/publico/:slug/ranking', rankingPublicoRouter);
 app.use('/api/publico/:slug/torneos/:id/cuadros', cuadrosPublicoRouter);
+// Con login de jugador: lo suyo, en la app.
+app.use('/api/jugador/:slug', jugadorRouter);
 
 app.use(manejarErrores);
 

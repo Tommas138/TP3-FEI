@@ -141,6 +141,8 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~¿Dónde guarda el celular la sesión?~~ **En `expo-secure-store`, cifrada con el Keystore de Android** ([decisión 041](decisiones/041-sesion-en-el-celular.md)). El token permite actuar en nombre del jugador y cifrarlo cuesta lo mismo
 - ~~¿Qué muestra la app sin sesión?~~ **Solo el ingreso** ([decisión 042](decisiones/042-la-app-sin-sesion.md)). La consulta sin cuenta ya está en la web, y sin sesión la app no sabe de qué organización mostrar algo
 - ~~¿La tarjeta del ranking muestra cuánto cambió el último torneo ("+15")?~~ **No, por ahora** ([decisión 043](decisiones/043-ranking-sin-el-cambio-del-ultimo-torneo.md)). La API no devuelve qué puntos reemplazó cada casillero, y un "+N" sin eso contradice lo que pasó cada vez que hubo un reemplazo
+- ~~¿Cómo reconoce la API al jugador?~~ **Con rutas propias bajo `/api/jugador/:slug`, con login y el perfil de jugador del usuario en esa organización** ([decisión 044](decisiones/044-rutas-del-jugador.md)). Se ve en la URL qué permiso tiene cada ruta, y ninguna de administración cambia
+- ~~¿Cómo se navega en la app?~~ **Con una barra de pestañas abajo, solo texto** ([decisión 045](decisiones/045-pestanas-de-la-app.md)). Es lo habitual en Android, viene con expo-router y abre en Cuándo juego, la vista principal
 
 ---
 

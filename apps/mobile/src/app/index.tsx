@@ -1,5 +1,5 @@
-// Por ahora la app abre en el ranking. Cuando llegue la segunda pantalla (Cuándo juego, paso 4) se
-// decide cómo se navega entre las dos.
+// La app abre en una pestaña (decisión 045). Cuando llegue Cuándo juego, la vista principal
+// según 04-flujo-jugador §7, abre en esa.
 import { Redirect } from 'expo-router';
 
 export default function Inicio() {

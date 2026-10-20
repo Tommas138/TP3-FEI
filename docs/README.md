@@ -145,6 +145,7 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~¿Cómo se navega en la app?~~ **Con una barra de pestañas abajo, solo texto** ([decisión 045](decisiones/045-pestanas-de-la-app.md)). Es lo habitual en Android, viene con expo-router y abre en Cuándo juego, la vista principal
 - ~~¿A quién se le muestra el teléfono de un jugador?~~ **Solo al rival de un partido que todavía no se jugó, para escribirle por WhatsApp** ([decisión 046](decisiones/046-telefono-del-rival.md)). Es lo mínimo para coordinar; el aviso previo de [04](04-flujo-jugador.md) §6.6 queda pendiente
 - ~~¿Cómo llegan los avisos al celular?~~ **El fixture, por push desde la API con el servicio de Expo; el recordatorio antes de cada partido, programado en el celular** ([decisión 047](decisiones/047-avisos-push.md)). Es lo único que avisa el fixture sin abrir la app, la API no guarda secretos y el recordatorio llega aunque no haya señal. El aviso de la confirmación del rival llega con F14
+- ~~¿Cómo se conecta el APK a una API sin https?~~ **Se permite http solo en el APK de prueba, el del perfil `preview`** ([decisión 048](decisiones/048-http-en-el-apk-de-prueba.md)). Android bloquea http en los APK; así se prueba en la red de casa y un APK de producción sigue exigiendo https
 
 ---
 

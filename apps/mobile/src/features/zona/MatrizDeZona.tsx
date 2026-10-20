@@ -19,7 +19,7 @@ export function MatrizDeZona({ filas, partidos }: Props) {
   return (
     <View style={estilos.marco}>
       <View style={[estilos.fila, estilos.encabezado]}>
-        <View style={estilos.columnaNombre} />
+        <View style={[estilos.columnaNombre, estilos.esquina]} />
         {filas.map((f) => (
           <Text key={f.jugadorId} style={[estilos.celda, estilos.textoEncabezado]}>
             {abreviar(f.apellido)}
@@ -129,6 +129,10 @@ const estilos = StyleSheet.create({
     paddingHorizontal: 8,
     borderRightWidth: 1,
     borderRightColor: colores.linea,
+  },
+  // La esquina del encabezado: tan alta como las abreviaturas, no como una fila.
+  esquina: {
+    height: 'auto',
   },
   textoEncabezado: {
     height: 'auto',

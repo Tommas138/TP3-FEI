@@ -73,11 +73,23 @@ npm run dev -w apps/mobile                     # Metro, con el QR
 4. La variable se lee al compilar: si la cambiás, reiniciá con `npx expo start --clear` (desde `apps/mobile`). La IP de la notebook puede cambiar de un día para el otro: si la app no conecta, revisala primero.
 5. Ingresá con la cuenta de jugador del seed: `martin.sanhueza@example.com`, contraseña `jugador-de-prueba`. Juega en los dos circuitos del seed, así que la app pregunta en cuál entrar.
 
-Por ahora la app tiene el ranking de tu circuito. En la Liga del Valle dice que el circuito no lleva ranking: es lo esperado.
+La app tiene tres pestañas: *Cuándo juego*, *Mi zona* y *Ranking*. Con la cuenta de prueba (`martin.sanhueza@example.com` / `jugador-de-prueba`) se ve la Copa Alta Barda. En la Liga del Valle el ranking dice que el circuito no lleva ranking: es lo esperado.
+
+En Expo Go no anda ningún aviso, ni el del fixture ni los recordatorios: Expo Go para Android no trae un módulo nativo que `expo-notifications` carga al importarse. La app abre igual, con los avisos apagados y sin pedir permiso. Se prueban con el APK. Los recordatorios andan en un APK sin Firebase; el aviso del fixture necesita Firebase ([decisión 047](docs/decisiones/047-avisos-push.md)).
 
 Si `npm run typecheck -w apps/mobile` dice que una ruta no existe, corré `npx expo start` una vez desde `apps/mobile`: las rutas tipadas se regeneran al arrancar Metro.
 
-El APK instalable se genera con EAS ([decisión 036](docs/decisiones/036-apk-con-eas.md)): `npx eas-cli login` y después `npx eas-cli build -p android --profile preview` desde `apps/mobile`.
+#### Generar el APK
+
+Se genera con EAS ([decisión 036](docs/decisiones/036-apk-con-eas.md)). Todo desde `apps/mobile`:
+
+1. `npx eas-cli login`. El proyecto ya está creado en la cuenta `dundermifflinpruebas` (el `projectId` está en `app.json`): para generar el APK hay que ser miembro de esa cuenta.
+2. **La URL de la API.** El `.env` no se sube a EAS, así que el APK no la toma de ahí: `npx eas-cli env:set --name EXPO_PUBLIC_API_URL --value http://<IP o dominio de la API>:3000 --environment preview --visibility plaintext`. Si la IP cambia, se vuelve a correr y se genera otro APK.
+3. **Avisos push** ([decisión 047](docs/decisiones/047-avisos-push.md)). Sin esto el APK anda igual, sin el aviso del fixture:
+   - En [Firebase](https://console.firebase.google.com), creá un proyecto y agregale una app Android con el paquete `com.setpoint.app`. Bajá el `google-services.json`. No se commitea: está en el `.gitignore`.
+   - Subilo como variable de tipo archivo: `npx eas-cli env:set --name GOOGLE_SERVICES_JSON --type file --value ./google-services.json --environment preview --visibility secret`.
+   - En Firebase, *Configuración del proyecto → Cuentas de servicio*, generá una clave privada y cargala en EAS con `npx eas-cli credentials` (Android → *Google Service Account* → *FCM V1*).
+4. `npx eas-cli build -p android --profile preview`. La primera vez pregunta si genera la clave para firmar el APK: decile que sí, y EAS la guarda. Al terminar, da el link para bajar el APK.
 
 ---
 

@@ -24,8 +24,9 @@ export function urlDeLaApi(): string | undefined {
   return API_URL;
 }
 
-// Llama a la API. Los errores llegan como ErrorApi con el código de la API.
-export async function pedir<T>(metodo: Metodo, ruta: string, cuerpo?: unknown): Promise<T> {
+// Llama a la API. Los errores llegan como ErrorApi con el código de la API. Las rutas de
+// /api/jugador piden el token de la sesión; las públicas, no.
+export async function pedir<T>(metodo: Metodo, ruta: string, cuerpo?: unknown, token?: string): Promise<T> {
   if (!API_URL) throw new ErrorApi('SIN_API_URL');
 
   const corte = new AbortController();
@@ -34,7 +35,10 @@ export async function pedir<T>(metodo: Metodo, ruta: string, cuerpo?: unknown): 
   try {
     respuesta = await fetch(`${API_URL}${ruta}`, {
       method: metodo,
-      headers: cuerpo !== undefined ? { 'Content-Type': 'application/json' } : undefined,
+      headers: {
+        ...(cuerpo !== undefined && { 'Content-Type': 'application/json' }),
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
       body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
       signal: corte.signal,
     });

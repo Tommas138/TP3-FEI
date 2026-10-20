@@ -141,6 +141,11 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~¿Dónde guarda el celular la sesión?~~ **En `expo-secure-store`, cifrada con el Keystore de Android** ([decisión 041](decisiones/041-sesion-en-el-celular.md)). El token permite actuar en nombre del jugador y cifrarlo cuesta lo mismo
 - ~~¿Qué muestra la app sin sesión?~~ **Solo el ingreso** ([decisión 042](decisiones/042-la-app-sin-sesion.md)). La consulta sin cuenta ya está en la web, y sin sesión la app no sabe de qué organización mostrar algo
 - ~~¿La tarjeta del ranking muestra cuánto cambió el último torneo ("+15")?~~ **No, por ahora** ([decisión 043](decisiones/043-ranking-sin-el-cambio-del-ultimo-torneo.md)). La API no devuelve qué puntos reemplazó cada casillero, y un "+N" sin eso contradice lo que pasó cada vez que hubo un reemplazo
+- ~~¿Cómo reconoce la API al jugador?~~ **Con rutas propias bajo `/api/jugador/:slug`, con login y el perfil de jugador del usuario en esa organización** ([decisión 044](decisiones/044-rutas-del-jugador.md)). Se ve en la URL qué permiso tiene cada ruta, y ninguna de administración cambia
+- ~~¿Cómo se navega en la app?~~ **Con una barra de pestañas abajo, solo texto** ([decisión 045](decisiones/045-pestanas-de-la-app.md)). Es lo habitual en Android, viene con expo-router y abre en Cuándo juego, la vista principal
+- ~~¿A quién se le muestra el teléfono de un jugador?~~ **Solo al rival de un partido que todavía no se jugó, para escribirle por WhatsApp** ([decisión 046](decisiones/046-telefono-del-rival.md)). Es lo mínimo para coordinar; el aviso previo de [04](04-flujo-jugador.md) §6.6 queda pendiente
+- ~~¿Cómo llegan los avisos al celular?~~ **El fixture, por push desde la API con el servicio de Expo; el recordatorio antes de cada partido, programado en el celular** ([decisión 047](decisiones/047-avisos-push.md)). Es lo único que avisa el fixture sin abrir la app, la API no guarda secretos y el recordatorio llega aunque no haya señal. El aviso de la confirmación del rival llega con F14
+- ~~¿Cómo se conecta el APK a una API sin https?~~ **Se permite http solo en el APK de prueba, el del perfil `preview`** ([decisión 048](decisiones/048-http-en-el-apk-de-prueba.md)). Android bloquea http en los APK; así se prueba en la red de casa y un APK de producción sigue exigiendo https
 
 ---
 
@@ -203,7 +208,7 @@ Lista para llevar a la próxima charla. Las respondidas se tachan.
 | Los webhooks de MercadoPago necesitan URL pública | ngrok en desarrollo; verificar antes de la demo |
 | Sobreventa de cupos por concurrencia | Reserva con vencimiento + lista de espera |
 | La demo depende de una cuenta de Neon externa | `docker-compose` con Postgres local, autosuficiente |
-| El APK se genera con la cuenta de Expo de un integrante ([decisión 036](decisiones/036-apk-con-eas.md)) | El APK se entrega como archivo y no necesita la cuenta para funcionar. Generarlo con tiempo, porque el plan gratuito tiene cola |
+| El APK se genera con la cuenta de Expo de un integrante ([decisión 036](decisiones/036-apk-con-eas.md)), y los avisos remotos piden además un proyecto de Firebase ([decisión 047](decisiones/047-avisos-push.md)) | El APK se entrega como archivo y no necesita la cuenta para funcionar. Generarlo con tiempo, porque el plan gratuito tiene cola. Sin Firebase el APK funciona igual, sin avisos remotos |
 | El insumo de la extracción de resultados no está confirmado | El desarrollo es el mismo para captura, foto o texto libre. Las otras dos funcionalidades de IA no dependen de esto |
 | La importación del padrón depende de la API de Anthropic, y `docker compose up` no puede depender de cuentas externas | Sin `ANTHROPIC_API_KEY` la API levanta igual y la importación termina en error con el motivo; el alta manual sigue funcionando. Para la demo, la key va en el `.env`. El rate limiting y el tope de gasto de [06](06-ia.md) todavía no están implementados |
 | Exposición de datos de contacto en pantallas públicas | Ninguna vista pública incluye teléfono ni email |

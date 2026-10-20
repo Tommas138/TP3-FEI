@@ -60,8 +60,7 @@ function Navegacion({ fuentesListas }: { fuentesListas: boolean }) {
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={perfil !== null} redirectTo={sesion ? '/circuitos' : '/ingresar'}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="ranking" />
+          <Stack.Screen name="(pestanas)" />
         </Stack.Protected>
         <Stack.Protected guard={sesion !== null} redirectTo="/ingresar">
           <Stack.Screen name="circuitos" />

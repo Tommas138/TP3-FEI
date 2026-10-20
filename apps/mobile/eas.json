@@ -6,6 +6,10 @@
   "build": {
     "preview": {
       "distribution": "internal",
+      "environment": "preview",
+      "env": {
+        "PERMITIR_HTTP": "1"
+      },
       "android": {
         "buildType": "apk"
       }

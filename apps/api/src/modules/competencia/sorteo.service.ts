@@ -19,6 +19,7 @@ import { hoy } from '../../lib/fechas';
 import { organizacionAdministrada } from '../../lib/permisos';
 import { prisma } from '../../lib/prisma';
 import { ErrorHttp } from '../../middleware/errores';
+import { avisarFixture } from '../avisos/avisos.service';
 import { puntosVigentes } from '../ranking/ranking';
 import {
   alcanzanParaLasZonas,
@@ -257,5 +258,7 @@ export async function confirmarSorteo(slug: string, usuarioId: number, torneoId:
     });
   });
 
+  // Fuera de la transacción y sin esperarlo: el aviso no puede frenar ni deshacer la confirmación.
+  void avisarFixture(torneo.id).catch((error) => console.error('No se pudo avisar el fixture', error));
   return obtenerSorteo(slug, usuarioId, torneoId);
 }

@@ -4,14 +4,14 @@ import type { RankingPublico } from '@setpoint/shared';
 import { useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Chip } from '../components/Chip';
-import { EncabezadoCircuito } from '../features/auth/EncabezadoCircuito';
-import { useSesion } from '../features/auth/SesionProvider';
-import { FilaRanking } from '../features/ranking/FilaRanking';
-import { TarjetaPropia } from '../features/ranking/TarjetaPropia';
-import { useRanking } from '../features/ranking/useRanking';
-import { ErrorApi } from '../lib/api';
-import { colores, fuentes, medidas, tabular } from '../lib/tokens';
+import { Chip } from '../../components/Chip';
+import { EncabezadoCircuito } from '../../features/auth/EncabezadoCircuito';
+import { useSesion } from '../../features/auth/SesionProvider';
+import { FilaRanking } from '../../features/ranking/FilaRanking';
+import { TarjetaPropia } from '../../features/ranking/TarjetaPropia';
+import { useRanking } from '../../features/ranking/useRanking';
+import { ErrorApi } from '../../lib/api';
+import { colores, fuentes, medidas, tabular } from '../../lib/tokens';
 
 function mensajeDeError(error: Error) {
   if (error instanceof ErrorApi && error.codigo === 'SIN_CONEXION') return 'No pudimos conectarnos. Revisá tu conexión y probá de nuevo.';
@@ -24,7 +24,7 @@ export default function Ranking() {
   if (!perfil) return null;
 
   return (
-    <SafeAreaView style={estilos.pantalla}>
+    <SafeAreaView style={estilos.pantalla} edges={['top']}>
       <ScrollView
         contentContainerStyle={estilos.contenido}
         refreshControl={

@@ -2,6 +2,7 @@
   "expo": {
     "name": "SetPoint",
     "slug": "setpoint",
+    "owner": "dundermifflinpruebas",
     "scheme": "setpoint",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -27,10 +28,21 @@
           "backgroundColor": "#FFFFFF"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "avisos"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "dac2be9c-691b-4ae7-9c5c-628f5e5f682c"
+      }
     }
   }
 }

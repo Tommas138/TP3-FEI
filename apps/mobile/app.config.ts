@@ -1,17 +1,12 @@
-// Lo que depende de la cuenta de Expo y del proyecto de Firebase de quien genera el APK sale de
-// variables de entorno, así no queda ninguna cuenta en el repo (decisión 047). Lo demás está en
-// app.json. Sin estas variables la app funciona igual: solo no recibe avisos del servidor.
+// Lo único de la configuración que no va en app.json: el google-services.json del proyecto de
+// Firebase de los avisos (decisión 047). No se commitea; en EAS es una variable de tipo archivo.
+// Sin él, el APK funciona igual y solo no recibe el aviso del fixture.
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...(config as ExpoConfig),
   android: {
     ...config.android,
-    // Ruta al google-services.json del proyecto de Firebase. En EAS, una variable de tipo archivo.
     googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
-  },
-  extra: {
-    ...config.extra,
-    eas: { projectId: process.env.EAS_PROJECT_ID },
   },
 });

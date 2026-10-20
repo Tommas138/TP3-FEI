@@ -28,7 +28,8 @@ Opción 1.
 - **El fixture se avisa al confirmar el sorteo**, a cada jugador con cuenta, con su zona. Se manda fuera de la transacción y sin esperarlo: si falla, la confirmación no se deshace. Se manda por HTTP al servicio de Expo, sin SDK. Los tokens que Expo da por no registrados se borran.
 - **El recordatorio lo programa la app** un día antes de cada partido con fecha, o dos horas antes si la fecha se anotó con menos de un día. Se rehacen cada vez que se cargan los partidos de Cuándo juego.
 - **El aviso de la confirmación del rival** se suma con F14, con el mismo `enviarAvisos()`.
-- **El `projectId` de EAS y el `google-services.json` de Firebase** se pasan por variables de entorno en `app.config.ts`. Sin ellas la app funciona igual y no recibe avisos remotos.
+- **El `projectId` y el dueño del proyecto de EAS van en `app.json`.** No son secretos, y los tres integrantes tienen que generar el APK sobre el mismo proyecto para que la firma sea la misma ([decisión 036](036-apk-con-eas.md)). EAS no lee el `.env` al evaluar la configuración, así que tampoco pueden ir ahí.
+- **El `google-services.json` de Firebase no se commitea:** `app.config.ts` lo toma de `GOOGLE_SERVICES_JSON`, una variable de tipo archivo en el entorno de EAS. Sin él, el APK funciona igual y no recibe el aviso del fixture.
 
 ## Por qué
 
@@ -39,6 +40,6 @@ Opción 1.
 ## Qué se resigna
 
 - **Los avisos solo se prueban con un APK.** En Expo Go la app carga `expo-notifications` protegida: si falla, abre igual con los avisos apagados. Los recordatorios andan en cualquier APK; el aviso del fixture, solo en uno generado con el proyecto de Firebase.
-- **Generar el APK pide dos cuentas:** la de Expo, que ya pedía la [decisión 036](036-apk-con-eas.md), y un proyecto de Firebase.
+- **Generar el APK pide dos cuentas:** la de Expo, que ya pedía la [decisión 036](036-apk-con-eas.md), y un proyecto de Firebase. El proyecto de EAS es de la cuenta `dundermifflinpruebas`; para generar el APK, cada integrante tiene que ser miembro de esa cuenta.
 - **Si el jugador cambia la fecha en otro celular**, el recordatorio de este se corrige recién al abrir la app.
 - **No hay preferencias de avisos.** El jugador los apaga desde los ajustes de Android.

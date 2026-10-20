@@ -83,14 +83,13 @@ Si `npm run typecheck -w apps/mobile` dice que una ruta no existe, corré `npx e
 
 Se genera con EAS ([decisión 036](docs/decisiones/036-apk-con-eas.md)). Todo desde `apps/mobile`:
 
-1. `npx eas-cli login` con la cuenta de Expo, y `npx eas-cli init` para crear el proyecto. Copiá el `projectId` que muestra.
+1. `npx eas-cli login`. El proyecto ya está creado en la cuenta `dundermifflinpruebas` (el `projectId` está en `app.json`): para generar el APK hay que ser miembro de esa cuenta.
 2. **La URL de la API.** El `.env` no se sube a EAS, así que el APK no la toma de ahí: `npx eas-cli env:create --name EXPO_PUBLIC_API_URL --value http://<IP o dominio de la API>:3000 --environment preview`.
-3. **El proyecto de EAS:** `npx eas-cli env:create --name EAS_PROJECT_ID --value <projectId> --environment preview`.
-4. **Avisos push** ([decisión 047](docs/decisiones/047-avisos-push.md)). Sin esto el APK anda igual, sin el aviso del fixture:
+3. **Avisos push** ([decisión 047](docs/decisiones/047-avisos-push.md)). Sin esto el APK anda igual, sin el aviso del fixture:
    - En [Firebase](https://console.firebase.google.com), creá un proyecto y agregale una app Android con el paquete `com.setpoint.app`. Bajá el `google-services.json`. No se commitea: está en el `.gitignore`.
    - Subilo como variable de tipo archivo: `npx eas-cli env:create --name GOOGLE_SERVICES_JSON --type file --value ./google-services.json --environment preview`.
    - En Firebase, *Configuración del proyecto → Cuentas de servicio*, generá una clave privada y cargala en EAS con `npx eas-cli credentials` (Android → *Google Service Account* → *FCM V1*).
-5. `npx eas-cli build -p android --profile preview`. Al terminar, EAS da el link para bajar el APK.
+4. `npx eas-cli build -p android --profile preview`. La primera vez pregunta si genera la clave para firmar el APK: decile que sí, y EAS la guarda. Al terminar, da el link para bajar el APK.
 
 ---
 

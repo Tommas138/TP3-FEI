@@ -8,28 +8,30 @@ const EN_JUEGO = [EstadoTorneo.ZONAS_GENERADAS, EstadoTorneo.GRUPOS_EN_CURSO, Es
 
 const JUGADOR = { select: { nombre: true, apellido: true, telefono: true } };
 
-// Los partidos del jugador que pregunta en su torneo más reciente en juego (F11). El teléfono
-// solo sale de los rivales de un partido por jugar (decisión 046).
+// Los partidos del jugador que pregunta en todos sus torneos en juego (F11): pueden ser dos,
+// las eliminatorias de uno y las zonas del siguiente. El teléfono solo sale de los rivales de un
+// partido por jugar (decisión 046).
 export async function misPartidos(slug: string, usuarioId: number): Promise<RespuestaMisPartidos> {
   const { organizacionId, jugadorId } = await perfilDeJugador(slug, usuarioId);
 
-  const inscripcion = await prisma.inscripcion.findFirst({
+  const torneos = await prisma.torneo.findMany({
     where: {
-      jugadorId,
-      grupo: { not: null },
-      torneo: { organizacionId, sorteoConfirmado: true, estado: { in: EN_JUEGO } },
+      organizacionId,
+      sorteoConfirmado: true,
+      estado: { in: EN_JUEGO },
+      inscripciones: { some: { jugadorId, grupo: { not: null } } },
     },
-    orderBy: { torneoId: 'desc' },
-    select: { torneo: { select: { id: true, nombre: true, edicion: true } } },
+    orderBy: { id: 'asc' },
+    select: { id: true, nombre: true, edicion: true },
   });
-  if (!inscripcion) return { partidos: null };
-  const { torneo } = inscripcion;
+  if (torneos.length === 0) return { partidos: null };
 
   const partidos = await prisma.partido.findMany({
-    where: { torneoId: torneo.id },
+    where: { torneoId: { in: torneos.map((t) => t.id) } },
     orderBy: { id: 'asc' },
     select: {
       id: true,
+      torneoId: true,
       fase: true,
       grupo: true,
       cuadro: true,
@@ -49,11 +51,18 @@ export async function misPartidos(slug: string, usuarioId: number): Promise<Resp
     },
   });
 
+  const nombres = torneos.map((t) => t.edicion ?? t.nombre);
   return {
     partidos: {
-      torneoId: torneo.id,
-      torneo: torneo.edicion ?? torneo.nombre,
-      partidos: partidosDelJugador(jugadorId, partidos),
+      torneos: nombres,
+      // Con más de un torneo, cada partido dice de cuál es.
+      partidos: torneos.flatMap((t, i) =>
+        partidosDelJugador(
+          jugadorId,
+          partidos.filter((p) => p.torneoId === t.id),
+          torneos.length > 1 ? nombres[i] : undefined,
+        ),
+      ),
     },
   };
 }

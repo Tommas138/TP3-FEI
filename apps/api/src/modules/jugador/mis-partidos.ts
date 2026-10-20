@@ -46,8 +46,9 @@ function marcador(p: PartidoLeido, esA: boolean) {
 }
 
 // Cada partido del torneo en el que juega, visto desde su lado. Todos los del torneo hacen falta
-// para saber cuántas rondas tiene cada cuadro y nombrar la ronda.
-export function partidosDelJugador(jugadorId: number, partidosDelTorneo: PartidoLeido[]): PartidoDelJugador[] {
+// para saber cuántas rondas tiene cada cuadro y nombrar la ronda. Con el nombre del torneo, la
+// instancia lo lleva adelante: "Copa Confluencia 2026 · zona B".
+export function partidosDelJugador(jugadorId: number, partidosDelTorneo: PartidoLeido[], torneo?: string): PartidoDelJugador[] {
   const rondasPorCuadro = new Map<string, number>();
   for (const p of partidosDelTorneo) {
     if (p.cuadro && p.ronda) rondasPorCuadro.set(p.cuadro, Math.max(rondasPorCuadro.get(p.cuadro) ?? 0, p.ronda));
@@ -63,7 +64,7 @@ export function partidosDelJugador(jugadorId: number, partidosDelTorneo: Partido
 
       return {
         id: p.id,
-        instancia: instancia(p, rondasPorCuadro),
+        instancia: torneo ? `${torneo} · ${instancia(p, rondasPorCuadro)}` : instancia(p, rondasPorCuadro),
         rival: rival && {
           nombre: rival.nombre,
           apellido: rival.apellido,

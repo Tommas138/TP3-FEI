@@ -30,10 +30,10 @@ export default function CuandoJuego() {
       >
         <View style={estilos.encabezado}>
           <EncabezadoCircuito />
-          {consulta.data?.partidos && (
+          {consulta.data?.partidos?.torneos.length === 1 && (
             <View style={estilos.torneo}>
               <Text style={estilos.textoTorneo} numberOfLines={1}>
-                {consulta.data.partidos.torneo}
+                {consulta.data.partidos.torneos[0]}
               </Text>
             </View>
           )}

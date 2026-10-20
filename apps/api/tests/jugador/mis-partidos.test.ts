@@ -92,4 +92,10 @@ describe('partidosDelJugador', () => {
 
     expect(partidoSinRival.rival).toBeNull();
   });
+
+  it('con el nombre del torneo, la instancia lo lleva adelante', () => {
+    const [conTorneo] = partidosDelJugador(1, [partido({ grupo: 'B' })], 'Copa Confluencia 2026');
+
+    expect(conTorneo.instancia).toBe('Copa Confluencia 2026 · zona B');
+  });
 });

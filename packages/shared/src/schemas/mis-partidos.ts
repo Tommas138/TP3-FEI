@@ -10,7 +10,7 @@ export type RivalDelPartido = {
 
 export type PartidoDelJugador = {
   id: number;
-  // "zona C", "campeonato · semifinales"
+  // "zona C", "campeonato · semifinales". Si juega más de un torneo, con el nombre adelante.
   instancia: string;
   // null en un cuadro, mientras no se sabe quién viene de la ronda anterior.
   rival: RivalDelPartido | null;
@@ -25,9 +25,9 @@ export type PartidoDelJugador = {
 };
 
 export type MisPartidos = {
-  torneoId: number;
-  // "Copa Alta Barda 2026"
-  torneo: string;
+  // Los torneos en juego en los que está: casi siempre uno. Dos, si el siguiente arranca
+  // mientras se juegan las eliminatorias del anterior.
+  torneos: string[];
   partidos: PartidoDelJugador[];
 };
 

@@ -8,21 +8,24 @@ import { zonasConPosiciones } from '../competencia/posiciones';
 // Mientras el torneo está en estos estados, la zona del jugador se muestra. En eliminatorias
 // ya está cerrada, pero sigue siendo la referencia de cómo llegó a cada cuadro.
 const CON_ZONA_EN_JUEGO = [EstadoTorneo.ZONAS_GENERADAS, EstadoTorneo.GRUPOS_EN_CURSO, EstadoTorneo.ELIMINATORIAS];
+const ZONA_ABIERTA: EstadoTorneo[] = [EstadoTorneo.ZONAS_GENERADAS, EstadoTorneo.GRUPOS_EN_CURSO];
 
-// La zona del jugador que pregunta, en su torneo más reciente con zonas confirmadas (F11).
+// La zona del jugador que pregunta (F11). Si está en más de un torneo, la que se está jugando
+// va antes que una ya cerrada; entre iguales, la del torneo más nuevo.
 // La tabla sale de la misma cuenta que las posiciones de la organización (decisión 019).
 export async function miZona(slug: string, usuarioId: number): Promise<RespuestaMiZona> {
   const { organizacionId, jugadorId } = await perfilDeJugador(slug, usuarioId);
 
-  const inscripcion = await prisma.inscripcion.findFirst({
+  const inscripciones = await prisma.inscripcion.findMany({
     where: {
       jugadorId,
       grupo: { not: null },
       torneo: { organizacionId, sorteoConfirmado: true, estado: { in: CON_ZONA_EN_JUEGO } },
     },
     orderBy: { torneoId: 'desc' },
-    select: { torneoId: true, grupo: true },
+    select: { torneoId: true, grupo: true, torneo: { select: { estado: true } } },
   });
+  const inscripcion = inscripciones.find((i) => ZONA_ABIERTA.includes(i.torneo.estado)) ?? inscripciones[0];
   if (!inscripcion) return { zona: null };
   const grupo = inscripcion.grupo!;
 

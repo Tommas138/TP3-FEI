@@ -28,4 +28,4 @@ Opción 1. `GET /api/jugador/:slug/zona` es la primera ruta. El jugador sale del
 ## Qué se resigna
 
 - **Habrá más de una ruta para datos parecidos.** La zona tiene una ruta para la organización y otra para el jugador, y va a tener una pública con F10.
-- **Si el jugador está en dos torneos con zonas en juego a la vez**, Mi zona muestra el más reciente. Con una categoría por jugador no debería pasar.
+- **Si el jugador está en dos torneos a la vez** (las eliminatorias de uno y las zonas del siguiente), Mi zona muestra una sola zona: la que se está jugando, antes que una ya cerrada.

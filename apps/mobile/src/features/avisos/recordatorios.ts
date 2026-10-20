@@ -1,9 +1,9 @@
 // Recordatorio antes de cada partido con fecha (F11). Lo programa el celular, no la API: llega
 // aunque el celular no tenga conexión a esa hora (decisión 047).
 import type { PartidoDelJugador } from '@setpoint/shared';
-import * as Notifications from 'expo-notifications';
 import { diaYHora } from '../../lib/fechas';
 import { CANAL } from './avisos';
+import { Notifications } from './notificaciones';
 
 const PREFIJO = 'partido-';
 const HORA = 3_600_000;
@@ -19,25 +19,27 @@ export function cuandoRecordar(fechaAcordada: string, ahora = Date.now()) {
 // Rehace los recordatorios con los partidos de ahora: cada vez que se cargan, para que una fecha
 // cambiada o un partido ya jugado no quede con su recordatorio viejo.
 export async function programarRecordatorios(partidos: PartidoDelJugador[]) {
+  const avisos = Notifications;
+  if (!avisos) return;
   try {
-    const programados = await Notifications.getAllScheduledNotificationsAsync();
+    const programados = await avisos.getAllScheduledNotificationsAsync();
     await Promise.all(
       programados
         .filter((n) => n.identifier.startsWith(PREFIJO))
-        .map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
+        .map((n) => avisos.cancelScheduledNotificationAsync(n.identifier)),
     );
 
     for (const p of partidos) {
       if (!p.fechaAcordada || !p.rival || p.resultado) continue;
       const cuando = cuandoRecordar(p.fechaAcordada);
       if (!cuando) continue;
-      await Notifications.scheduleNotificationAsync({
+      await avisos.scheduleNotificationAsync({
         identifier: `${PREFIJO}${p.id}`,
         content: {
           title: `Jugás con ${p.rival.nombre} ${p.rival.apellido}`,
           body: [diaYHora(p.fechaAcordada), p.sede].filter(Boolean).join(' · '),
         },
-        trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: cuando, channelId: CANAL },
+        trigger: { type: avisos.SchedulableTriggerInputTypes.DATE, date: cuando, channelId: CANAL },
       });
     }
   } catch {

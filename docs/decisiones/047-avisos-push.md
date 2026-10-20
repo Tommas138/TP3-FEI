@@ -8,7 +8,7 @@ F11 pide que la app avise "cuando se publica el fixture, cuando su rival confirm
 
 - **La confirmación del rival** depende de anotar la fecha, que es F14 (75%). Todavía no hay nada que la dispare.
 - **Un aviso remoto en Android pasa por Firebase Cloud Messaging.** El servicio de avisos de Expo lo usa por debajo, con las credenciales de un proyecto de Firebase que se cargan en EAS.
-- **Desde el SDK 53, Expo Go no recibe avisos remotos en Android.** Solo se prueban con un APK.
+- **Expo Go para Android no sirve para probar avisos.** Desde el SDK 53 no recibe avisos remotos, y con el SDK 58 tampoco carga `expo-notifications`: le falta un módulo nativo (`ExpoTopicSubscriptionModule`) que la librería pide al importarse, en todas sus versiones 58. Los avisos solo se prueban con un APK.
 - **`docker compose up` no puede depender de cuentas externas.**
 
 ## Opciones consideradas
@@ -38,7 +38,7 @@ Opción 1.
 
 ## Qué se resigna
 
-- **El aviso remoto solo se prueba con un APK** generado con el proyecto de Firebase. En Expo Go solo andan los recordatorios.
+- **Los avisos solo se prueban con un APK.** En Expo Go la app carga `expo-notifications` protegida: si falla, abre igual con los avisos apagados. Los recordatorios andan en cualquier APK; el aviso del fixture, solo en uno generado con el proyecto de Firebase.
 - **Generar el APK pide dos cuentas:** la de Expo, que ya pedía la [decisión 036](036-apk-con-eas.md), y un proyecto de Firebase.
 - **Si el jugador cambia la fecha en otro celular**, el recordatorio de este se corrige recién al abrir la app.
 - **No hay preferencias de avisos.** El jugador los apaga desde los ajustes de Android.

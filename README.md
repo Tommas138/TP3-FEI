@@ -75,7 +75,7 @@ npm run dev -w apps/mobile                     # Metro, con el QR
 
 La app tiene tres pestañas: *Cuándo juego*, *Mi zona* y *Ranking*. Con la cuenta de prueba (`martin.sanhueza@example.com` / `jugador-de-prueba`) se ve la Copa Alta Barda. En la Liga del Valle el ranking dice que el circuito no lleva ranking: es lo esperado.
 
-En Expo Go andan los recordatorios antes de cada partido, pero no los avisos que manda la API (el del fixture): desde el SDK 53, Expo Go no los recibe en Android. Se prueban con el APK ([decisión 047](docs/decisiones/047-avisos-push.md)).
+En Expo Go no anda ningún aviso, ni el del fixture ni los recordatorios: Expo Go para Android no trae un módulo nativo que `expo-notifications` carga al importarse. La app abre igual, con los avisos apagados y sin pedir permiso. Se prueban con el APK. Los recordatorios andan en un APK sin Firebase; el aviso del fixture necesita Firebase ([decisión 047](docs/decisiones/047-avisos-push.md)).
 
 Si `npm run typecheck -w apps/mobile` dice que una ruta no existe, corré `npx expo start` una vez desde `apps/mobile`: las rutas tipadas se regeneran al arrancar Metro.
 

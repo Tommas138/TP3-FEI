@@ -73,7 +73,7 @@ npm run dev -w apps/mobile                     # Metro, con el QR
 4. La variable se lee al compilar: si la cambiás, reiniciá con `npx expo start --clear` (desde `apps/mobile`). La IP de la notebook puede cambiar de un día para el otro: si la app no conecta, revisala primero.
 5. Ingresá con la cuenta de jugador del seed: `martin.sanhueza@example.com`, contraseña `jugador-de-prueba`. Juega en los dos circuitos del seed, así que la app pregunta en cuál entrar.
 
-Por ahora, después de ingresar hay un inicio provisorio que dice con quién y en qué circuito entraste.
+Por ahora la app tiene el ranking de tu circuito. En la Liga del Valle dice que el circuito no lleva ranking: es lo esperado.
 
 Si `npm run typecheck -w apps/mobile` dice que una ruta no existe, corré `npx expo start` una vez desde `apps/mobile`: las rutas tipadas se regeneran al arrancar Metro.
 

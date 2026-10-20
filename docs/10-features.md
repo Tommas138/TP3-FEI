@@ -205,6 +205,8 @@ Cualquier persona podrá consultar el ranking del circuito desde un enlace, sin 
 
 **Entrega: 50%**
 
+**Estado:** implementada. En la web, para cualquiera con el enlace (`/c/:slug/ranking`, [decisión 033](decisiones/033-ranking-publico.md)), con buscador por apellido. En la app, la pantalla *Ranking* usa la misma ruta y suma tu tarjeta ("Vas 1º de 26", tus puntos y tus casilleros) y tu fila destacada. La tarjeta no muestra cuánto cambió el último torneo ([decisión 043](decisiones/043-ranking-sin-el-cambio-del-ultimo-torneo.md)).
+
 ---
 
 ## F10 — Consulta pública del torneo en vivo
@@ -235,6 +237,8 @@ El jugador dispondrá de una aplicación instalable en su teléfono donde ver su
 - Los avisos llegan como notificaciones del teléfono, sin necesidad de abrir la aplicación.
 
 **Entrega: 50%**
+
+**Estado:** en curso. La app (`apps/mobile`, Expo) tiene el ingreso del jugador, la elección del circuito si juega en varios ([decisiones 039 a 042](decisiones/039-ingreso-del-jugador.md)) y el ranking. Faltan *Cuándo juego*, *Mi zona*, los avisos y el APK.
 
 ---
 

@@ -140,6 +140,7 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~Si el jugador está en varios circuitos, ¿en cuál entra?~~ **Elige al entrar, la app lo recuerda, y cambia tocando el nombre del circuito en el encabezado**, donde también está "Cerrar sesión" ([decisión 040](decisiones/040-jugador-en-varios-circuitos.md)). Jugar en dos circuitos es un caso real de la plataforma (F02); los administradores siguen con la decisión 002
 - ~~¿Dónde guarda el celular la sesión?~~ **En `expo-secure-store`, cifrada con el Keystore de Android** ([decisión 041](decisiones/041-sesion-en-el-celular.md)). El token permite actuar en nombre del jugador y cifrarlo cuesta lo mismo
 - ~~¿Qué muestra la app sin sesión?~~ **Solo el ingreso** ([decisión 042](decisiones/042-la-app-sin-sesion.md)). La consulta sin cuenta ya está en la web, y sin sesión la app no sabe de qué organización mostrar algo
+- ~~¿La tarjeta del ranking muestra cuánto cambió el último torneo ("+15")?~~ **No, por ahora** ([decisión 043](decisiones/043-ranking-sin-el-cambio-del-ultimo-torneo.md)). La API no devuelve qué puntos reemplazó cada casillero, y un "+N" sin eso contradice lo que pasó cada vez que hubo un reemplazo
 
 ---
 

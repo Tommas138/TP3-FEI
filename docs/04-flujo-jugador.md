@@ -331,6 +331,8 @@ Vista principal durante el torneo: próximo partido con rival, club, día y hora
 
 Notificación push al generarse el fixture, al acordarse una fecha y como recordatorio previo al partido.
 
+**Implementado** ([decisión 047](decisiones/047-avisos-push.md)): el fixture llega por push al confirmarse el sorteo; el recordatorio lo programa el celular un día antes de cada partido con fecha. El de la fecha acordada llega con F14.
+
 ---
 
 ## 8. Zona y cuadros

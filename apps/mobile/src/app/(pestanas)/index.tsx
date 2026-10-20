@@ -1,10 +1,12 @@
 // Cuándo juego (F11): docs/pantallas/jugador/cuando-juego.html. La vista principal durante el
 // torneo (04-flujo-jugador §7): el próximo partido, lo que falta coordinar y el resto.
 import type { MisPartidos } from '@setpoint/shared';
+import { useEffect } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { EncabezadoCircuito } from '../../features/auth/EncabezadoCircuito';
 import { ErrorDeCarga } from '../../features/auth/ErrorDeCarga';
+import { programarRecordatorios } from '../../features/avisos/recordatorios';
 import { agruparPartidos } from '../../features/partidos/agrupar';
 import { OtrosPartidos } from '../../features/partidos/OtrosPartidos';
 import { SinCoordinar } from '../../features/partidos/SinCoordinar';
@@ -14,6 +16,12 @@ import { colores, fuentes, medidas, radios, tabular } from '../../lib/tokens';
 
 export default function CuandoJuego() {
   const consulta = useMisPartidos();
+  const partidos = consulta.data?.partidos?.partidos;
+
+  // Cada vez que llegan los partidos, los recordatorios quedan con las fechas de ahora.
+  useEffect(() => {
+    if (partidos) programarRecordatorios(partidos);
+  }, [partidos]);
 
   return (
     <SafeAreaView style={estilos.pantalla} edges={['top']}>

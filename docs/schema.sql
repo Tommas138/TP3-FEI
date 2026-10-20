@@ -89,6 +89,17 @@ CREATE TABLE usuarios (
     actualizado_en TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
+-- Celular donde un usuario recibe avisos push (decisión 047). Es del usuario, no de una
+-- organización: el mismo celular recibe los avisos de todos los circuitos en los que juega.
+CREATE TABLE dispositivos_aviso (
+    id             SERIAL PRIMARY KEY,
+    usuario_id     INT          NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    token          VARCHAR(255) NOT NULL UNIQUE,
+    creado_en      TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    actualizado_en TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+CREATE INDEX ix_dispositivos_aviso_usuario ON dispositivos_aviso (usuario_id);
+
 -- Circuito o grupo organizador. Clave de aislamiento de todo el sistema.
 CREATE TABLE organizaciones (
     id                     SERIAL PRIMARY KEY,

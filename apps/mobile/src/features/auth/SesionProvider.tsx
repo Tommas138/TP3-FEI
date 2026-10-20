@@ -1,5 +1,6 @@
 import type { PerfilDeJugador } from '@setpoint/shared';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { olvidarCelular } from '../avisos/avisos';
 import { borrarSesion, guardarCircuito, guardarSesion, leerCircuito, leerSesion, type Sesion } from './sesion';
 
 type ValorSesion = {
@@ -49,6 +50,9 @@ export function SesionProvider({ children }: { children: ReactNode }) {
       },
       // También olvida el circuito elegido: en un celular compartido, quien entre después elige el suyo.
       cerrarSesion: async () => {
+        const perfil = sesion && (perfilElegido(sesion.perfiles, jugadorIdElegido) ?? sesion.perfiles[0]);
+        // Sin esperarlo: sin señal tardaría, y salir no puede depender de la red.
+        if (sesion && perfil) void olvidarCelular(perfil.organizacion.slug, sesion.token);
         await borrarSesion();
         setSesion(null);
         setJugadorIdElegido(null);

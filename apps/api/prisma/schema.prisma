@@ -186,8 +186,25 @@ model Usuario {
   administra          AdminOrganizacion[]
   partidosAnotados    Partido[]           @relation("PartidoAnotadoPor")
   partidosConfirmados Partido[]           @relation("PartidoConfirmadoPor")
+  dispositivos        DispositivoAviso[]
 
   @@map("usuarios")
+}
+
+/// Un celular donde el usuario recibe avisos push (F11, decisión 047). Es del usuario, no de una
+/// organización: un mismo celular recibe los avisos de todos los circuitos en los que juega.
+model DispositivoAviso {
+  id            Int      @id @default(autoincrement())
+  usuarioId     Int
+  // ExponentPushToken[...]: identifica la app instalada en ese celular
+  token         String   @unique
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("dispositivos_aviso")
 }
 
 /// Circuito o grupo organizador. Clave de aislamiento de todo el sistema.

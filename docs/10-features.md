@@ -238,7 +238,7 @@ El jugador dispondrá de una aplicación instalable en su teléfono donde ver su
 
 **Entrega: 50%**
 
-**Estado:** en curso. La app (`apps/mobile`, Expo) tiene el ingreso del jugador, la elección del circuito si juega en varios ([decisiones 039 a 042](decisiones/039-ingreso-del-jugador.md)) el ranking y *Mi zona* (`GET /api/jugador/:slug/zona`, [decisión 044](decisiones/044-rutas-del-jugador.md)), con una barra de pestañas para pasar de una pantalla a otra ([decisión 045](decisiones/045-pestanas-de-la-app.md)). Faltan *Cuándo juego*, los avisos y el APK.
+**Estado:** en curso. La app (`apps/mobile`, Expo) tiene el ingreso del jugador, la elección del circuito si juega en varios ([decisiones 039 a 042](decisiones/039-ingreso-del-jugador.md)) el ranking, *Mi zona* (`GET /api/jugador/:slug/zona`, [decisión 044](decisiones/044-rutas-del-jugador.md)) y *Cuándo juego* (`GET /api/jugador/:slug/partidos`), con una barra de pestañas para pasar de una a otra ([decisión 045](decisiones/045-pestanas-de-la-app.md)). La app abre en Cuándo juego. "Escribirle" abre WhatsApp con el rival de un partido por jugar ([decisión 046](decisiones/046-telefono-del-rival.md)); anotar la fecha llega con F14 y "Cómo te fue con él", con F18. Faltan los avisos y el APK.
 
 ---
 

@@ -143,6 +143,7 @@ Monorepo con workspaces: `apps/api`, `apps/web`, `apps/mobile`, `packages/shared
 - ~~¿La tarjeta del ranking muestra cuánto cambió el último torneo ("+15")?~~ **No, por ahora** ([decisión 043](decisiones/043-ranking-sin-el-cambio-del-ultimo-torneo.md)). La API no devuelve qué puntos reemplazó cada casillero, y un "+N" sin eso contradice lo que pasó cada vez que hubo un reemplazo
 - ~~¿Cómo reconoce la API al jugador?~~ **Con rutas propias bajo `/api/jugador/:slug`, con login y el perfil de jugador del usuario en esa organización** ([decisión 044](decisiones/044-rutas-del-jugador.md)). Se ve en la URL qué permiso tiene cada ruta, y ninguna de administración cambia
 - ~~¿Cómo se navega en la app?~~ **Con una barra de pestañas abajo, solo texto** ([decisión 045](decisiones/045-pestanas-de-la-app.md)). Es lo habitual en Android, viene con expo-router y abre en Cuándo juego, la vista principal
+- ~~¿A quién se le muestra el teléfono de un jugador?~~ **Solo al rival de un partido que todavía no se jugó, para escribirle por WhatsApp** ([decisión 046](decisiones/046-telefono-del-rival.md)). Es lo mínimo para coordinar; el aviso previo de [04](04-flujo-jugador.md) §6.6 queda pendiente
 
 ---
 

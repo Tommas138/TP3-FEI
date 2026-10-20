@@ -10,6 +10,7 @@ export * from './schemas/cuadros';
 export * from './schemas/resultado';
 export * from './schemas/ranking';
 export * from './schemas/mi-zona';
+export * from './schemas/mis-partidos';
 export * from './schemas/salud';
 export * from './formato';
 export * from './desempate';
